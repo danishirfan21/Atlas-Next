@@ -1,0 +1,106 @@
+.container {
+  padding: 40px 60px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  margin-bottom: 40px;
+}
+
+.section {
+  margin-bottom: 24px;
+}
+
+.sectionTitle {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+.activityList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.activityItem {
+  display: flex;
+  gap: 12px;
+}
+
+.activityAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.activityContent {
+  flex: 1;
+}
+
+.activityTitle {
+  font-size: 14px;
+  color: var(--text-main);
+  margin-bottom: 4px;
+}
+
+.activityTime {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.popularDocs {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.popularDocItem {
+  padding: 12px;
+  border-radius: 8px;
+  background: #f9fafb;
+  transition: background 0.2s;
+  cursor: pointer;
+}
+
+.popularDocItem:hover {
+  background: #f3f4f6;
+}
+
+.popularDocTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 4px;
+}
+
+.popularDocStats {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.popularDocStats span {
+  margin: 0 4px;
+}
+
+/* Responsive */
+@media (max-width: 767px) {
+  .container {
+    padding: 30px 20px;
+  }
+
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+}
