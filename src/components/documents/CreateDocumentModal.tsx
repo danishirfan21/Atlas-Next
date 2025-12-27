@@ -38,11 +38,15 @@ export function CreateDocumentModal({ onClose }: CreateDocumentModalProps) {
       }).unwrap();
 
       dispatch(setSelectedDocumentId(newDoc.id));
-      dispatch(addToast({ message: 'Document created', type: 'success' }));
+      dispatch(addToast({ message: 'Document created successfully', type: 'success' }));
       onClose();
-    } catch (error) {
+    } catch (error: any) {
+      const errorMessage = error?.data?.error || error?.error || 'Failed to create document';
       dispatch(
-        addToast({ message: 'Failed to create document', type: 'error' })
+        addToast({ 
+          message: `${errorMessage}. Please try again.`, 
+          type: 'error' 
+        })
       );
     }
   };

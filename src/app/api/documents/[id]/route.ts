@@ -6,6 +6,14 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
+    // Simulate random API failures (7.5% chance)
+    if (Math.random() < 0.075) {
+      return NextResponse.json(
+        { error: 'Service temporarily unavailable' },
+        { status: 503 }
+      );
+    }
+
     const id = parseInt(params.id);
     const document = db.documents.getById(id);
 
@@ -30,6 +38,14 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
+    // Simulate random API failures (7.5% chance)
+    if (Math.random() < 0.075) {
+      return NextResponse.json(
+        { error: 'Failed to update document' },
+        { status: 500 }
+      );
+    }
+
     const id = parseInt(params.id);
     const body = await request.json();
 

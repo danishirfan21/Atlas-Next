@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
@@ -11,9 +11,12 @@ export function ToastContainer() {
 
   useEffect(() => {
     toasts.forEach((toast: { id: string; message: string; type: string }) => {
+      // Errors stay longer (5s), others 3s
+      const duration = toast.type === 'error' ? 5000 : 3000;
+      
       const timer = setTimeout(() => {
         dispatch(removeToast(toast.id));
-      }, 3000);
+      }, duration);
 
       return () => clearTimeout(timer);
     });
@@ -25,7 +28,17 @@ export function ToastContainer() {
     <div className={styles.container}>
       {toasts.map((toast: { id: string; message: string; type: string }) => (
         <div key={toast.id} className={`${styles.toast} ${styles[toast.type]}`}>
-          {toast.message}
+          <span className={styles.message}>{toast.message}</span>
+          <button
+            className={styles.dismiss}
+            onClick={() => dispatch(removeToast(toast.id))}
+            aria-label="Dismiss"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
         </div>
       ))}
     </div>

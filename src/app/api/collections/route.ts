@@ -3,6 +3,14 @@ import { db } from '@/lib/mockDb';
 
 export async function GET(request: Request) {
   try {
+    // Simulate random API failures (7.5% chance)
+    if (Math.random() < 0.075) {
+      return NextResponse.json(
+        { error: 'Service temporarily unavailable' },
+        { status: 503 }
+      );
+    }
+
     const collections = db.collections.getAll();
 
     // Sort by most recently updated
@@ -19,6 +27,14 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    // Simulate random API failures (7.5% chance)
+    if (Math.random() < 0.075) {
+      return NextResponse.json(
+        { error: 'Failed to create collection' },
+        { status: 500 }
+      );
+    }
+
     const body = await request.json();
 
     const newCollection = db.collections.create({

@@ -19,6 +19,82 @@
   color: var(--text-main);
   animation: slide-up 0.3s ease;
   max-width: 400px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.message {
+  flex: 1;
+}
+
+.dismiss {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.dismiss:hover {
+  background: #f3f4f6;
+  color: var(--text-main);
+}
+
+.success {
+  border-left: 3px solid #10b981;
+}
+
+.error {
+  border-left: 3px solid #ef4444;
+}
+
+.warning {
+  border-left: 3px solid #f59e0b;
+}
+
+.info {
+  border-left: 3px solid var(--primary-blue);
+}
+
+@keyframes slide-up {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+.container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.toast {
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 16px 20px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-main);
+  animation: slide-up 0.3s ease;
+  max-width: 400px;
 }
 
 .success {

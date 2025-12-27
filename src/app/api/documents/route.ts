@@ -3,6 +3,14 @@ import { db } from '@/lib/mockDb';
 
 export async function GET(request: Request) {
   try {
+    // Simulate random API failures (7.5% chance)
+    if (Math.random() < 0.075) {
+      return NextResponse.json(
+        { error: 'Service temporarily unavailable' },
+        { status: 503 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
     const sort = searchParams.get('sort');
@@ -72,6 +80,14 @@ export async function GET(request: Request) {
 // POST remains the same
 export async function POST(request: Request) {
   try {
+    // Simulate random API failures (7.5% chance)
+    if (Math.random() < 0.075) {
+      return NextResponse.json(
+        { error: 'Failed to create document' },
+        { status: 500 }
+      );
+    }
+
     const body = await request.json();
 
     const newDoc = db.documents.create({

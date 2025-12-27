@@ -88,9 +88,14 @@ export function DocumentPreview() {
       dispatch(
         addToast({ message: 'Document saved successfully', type: 'success' })
       );
-    } catch (error) {
-      dispatch(addToast({ message: 'Failed to save document', type: 'error' }));
-      console.error('Save error:', error);
+    } catch (error: any) {
+      const errorMessage = error?.data?.error || error?.error || 'Failed to save document';
+      dispatch(
+        addToast({ 
+          message: `${errorMessage}. Your changes were not saved.`, 
+          type: 'error' 
+        })
+      );
     }
   };
 
