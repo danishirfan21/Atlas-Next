@@ -1,0 +1,136 @@
+.container {
+  padding: 40px 60px;
+  max-width: 900px;
+}
+
+.header h2 {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: var(--text-main);
+}
+
+.meta {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 30px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.body {
+  font-size: 16px;
+  line-height: 1.7;
+  color: #374151;
+  margin-bottom: 40px;
+}
+
+.body p {
+  margin-bottom: 24px;
+}
+
+.footer {
+  display: flex;
+  gap: 12px;
+}
+
+/* Edit mode */
+.titleEdit {
+  width: 100%;
+  font-size: 32px;
+  font-weight: 700;
+  font-family: inherit;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 16px;
+  resize: none;
+  color: var(--text-main);
+}
+
+.titleEdit:focus {
+  outline: none;
+  border-color: var(--primary-blue);
+}
+
+.bodyEdit {
+  width: 100%;
+  font-size: 16px;
+  line-height: 1.7;
+  font-family: inherit;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 12px;
+  resize: vertical;
+  min-height: 400px;
+  color: var(--text-main);
+}
+
+.bodyEdit:focus {
+  outline: none;
+  border-color: var(--primary-blue);
+}
+
+/* Skeleton loading */
+.skeleton {
+  padding: 40px 0;
+}
+
+.skeletonTitle {
+  height: 40px;
+  width: 60%;
+  margin-bottom: 16px;
+  background: linear-gradient(90deg, #f3f4f6 0%, #e5e7eb 50%, #f3f4f6 100%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s ease-in-out infinite;
+  border-radius: 4px;
+}
+
+.skeletonMeta {
+  height: 16px;
+  width: 40%;
+  margin-bottom: 30px;
+  background: linear-gradient(90deg, #f3f4f6 0%, #e5e7eb 50%, #f3f4f6 100%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s ease-in-out infinite;
+  border-radius: 4px;
+}
+
+.skeletonBody {
+  height: 14px;
+  width: 100%;
+  margin-bottom: 12px;
+  background: linear-gradient(90deg, #f3f4f6 0%, #e5e7eb 50%, #f3f4f6 100%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s ease-in-out infinite;
+  border-radius: 4px;
+}
+
+.skeletonBody:last-child {
+  width: 70%;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Responsive */
+@media (max-width: 767px) {
+  .container {
+    padding: 30px 20px;
+  }
+
+  .header h2 {
+    font-size: 24px;
+  }
+
+  .titleEdit {
+    font-size: 24px;
+  }
+}
