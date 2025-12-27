@@ -3,7 +3,7 @@ import type { Document, PaginatedDocumentsResponse } from '@/types';
 
 export const documentsApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    getDocuments: builder.query
+    getDocuments: builder.query<
       PaginatedDocumentsResponse,
       { status?: string; sort?: string; q?: string; page?: number; limit?: number }
     >({
@@ -39,7 +39,7 @@ export const documentsApi = apiSlice.injectEndpoints({
       invalidatesTags: [{ type: 'Document', id: 'LIST' }],
     }),
 
-    updateDocument: builder.mutation
+    updateDocument: builder.mutation<
       Document,
       { id: number } & Partial<Document>
     >({

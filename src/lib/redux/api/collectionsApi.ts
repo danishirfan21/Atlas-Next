@@ -28,7 +28,7 @@ export const collectionsApi = apiSlice.injectEndpoints({
       invalidatesTags: [{ type: 'Collection', id: 'LIST' }],
     }),
 
-    updateCollection: builder.mutation
+    updateCollection: builder.mutation<
       Collection,
       { id: number } & Partial<Collection>
     >({

@@ -10,7 +10,7 @@ export function ToastContainer() {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    toasts.forEach((toast) => {
+    toasts.forEach((toast: { id: string; message: string; type: string }) => {
       const timer = setTimeout(() => {
         dispatch(removeToast(toast.id));
       }, 3000);
@@ -23,7 +23,7 @@ export function ToastContainer() {
 
   return (
     <div className={styles.container}>
-      {toasts.map((toast) => (
+      {toasts.map((toast: { id: string; message: string; type: string }) => (
         <div key={toast.id} className={`${styles.toast} ${styles[toast.type]}`}>
           {toast.message}
         </div>

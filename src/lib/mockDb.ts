@@ -190,6 +190,10 @@ export function initializeDb() {
       createdAt: new Date(now.getTime() - 40 * 24 * 60 * 60 * 1000),
       updatedAt: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000),
     },
+  ];
+
+  // Add more documents
+  documents = documents.concat([
     {
       id: 7,
       title: 'Engineering Onboarding Guide',
@@ -278,7 +282,7 @@ export function initializeDb() {
       status: 'Published',
       views: 312,
     },
-  ];
+  ]);
 
   // Generate activity feed from documents
   activities = documents

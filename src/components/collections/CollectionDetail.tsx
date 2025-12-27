@@ -88,8 +88,8 @@ export function CollectionDetail() {
           <div>Loading documents...</div>
         ) : (
           <div className={styles.documentsList}>
-            {documents && documents.length > 0 ? (
-              documents.slice(0, 3).map((doc) => (
+            {documents && documents.documents.length > 0 ? (
+              documents.documents.slice(0, 3).map((doc) => (
                 <div key={doc.id} className={styles.documentCard}>
                   <h4>{doc.title}</h4>
                   <p>{doc.snippet}</p>
