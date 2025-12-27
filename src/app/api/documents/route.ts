@@ -7,6 +7,8 @@ export async function GET(request: Request) {
     const status = searchParams.get('status');
     const sort = searchParams.get('sort');
     const q = searchParams.get('q');
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '10');
 
     let documents = db.documents.getAll();
 
@@ -41,7 +43,24 @@ export async function GET(request: Request) {
       );
     }
 
-    return NextResponse.json(documents);
+    // Apply pagination
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+    const paginatedDocs = documents.slice(startIndex, endIndex);
+
+    const response = {
+      documents: paginatedDocs,
+      pagination: {
+        page,
+        limit,
+        total: documents.length,
+        totalPages: Math.ceil(documents.length / limit),
+        hasNext: endIndex < documents.length,
+        hasPrev: page > 1,
+      },
+    };
+
+    return NextResponse.json(response);
   } catch (error) {
     return NextResponse.json(
       { error: 'Failed to fetch documents' },
@@ -50,6 +69,7 @@ export async function GET(request: Request) {
   }
 }
 
+// POST remains the same
 export async function POST(request: Request) {
   try {
     const body = await request.json();

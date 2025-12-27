@@ -6,3 +6,6 @@ export { Card } from './Card/Card';
 export { Avatar } from './Avatar/Avatar';
 export { Badge } from './Badge/Badge';
 export { ToastContainer } from './Toast/Toast';
+export { Pagination } from './Pagination/Pagination';
+export { ErrorBoundary } from './ErrorBoundary/ErrorBoundary';
+export { ErrorState } from './ErrorState/ErrorState';

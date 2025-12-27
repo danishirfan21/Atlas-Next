@@ -1,0 +1,27 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.icon {
+  color: #ef4444;
+  margin-bottom: 16px;
+}
+
+.container h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 8px;
+}
+
+.container p {
+  font-size: 14px;
+  color: var(--text-muted);
+  max-width: 300px;
+  margin-bottom: 20px;
+}

@@ -90,6 +90,7 @@ export function DocumentPreview() {
       );
     } catch (error) {
       dispatch(addToast({ message: 'Failed to save document', type: 'error' }));
+      console.error('Save error:', error);
     }
   };
 

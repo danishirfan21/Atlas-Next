@@ -6,10 +6,14 @@ import { useGetDocumentsQuery } from '@/lib/redux/api/documentsApi';
 import {
   setSelectedDocumentId,
   setDocumentFilters,
+  setDocumentsPage,
+  resetDocumentsPage,
+  addToast,
 } from '@/lib/redux/slices/uiSlice';
 import { DocumentList } from '@/components/documents/DocumentList';
 import { DocumentPreview } from '@/components/documents/DocumentPreview';
 import { CreateDocumentModal } from '@/components/documents/CreateDocumentModal';
+import { Pagination, ErrorState } from '@/components/ui';
 import styles from './page.module.css';
 
 export default function DocumentsPage() {
@@ -20,12 +24,18 @@ export default function DocumentsPage() {
   );
   const filters = useAppSelector((state) => state.ui.documentFilters);
   const searchQuery = useAppSelector((state) => state.ui.searchQuery);
+  const pagination = useAppSelector((state) => state.ui.documentsPagination);
 
-  const { data: documents, isLoading } = useGetDocumentsQuery({
+  const { data, isLoading, error, refetch } = useGetDocumentsQuery({
     status: filters.status,
     sort: filters.sort,
     q: searchQuery,
+    page: pagination.page,
+    limit: pagination.limit,
   });
+
+  const documents = data?.documents || [];
+  const paginationInfo = data?.pagination;
 
   // Auto-select first document on load if none selected
   useEffect(() => {
@@ -33,6 +43,11 @@ export default function DocumentsPage() {
       dispatch(setSelectedDocumentId(documents[0].id));
     }
   }, [documents, selectedDocumentId, dispatch]);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    dispatch(resetDocumentsPage());
+  }, [filters.status, filters.sort, searchQuery, dispatch]);
 
   // Listen for Topbar new document event
   useEffect(() => {
@@ -49,6 +64,18 @@ export default function DocumentsPage() {
     };
   }, []);
 
+  // Show error toast on fetch error
+  useEffect(() => {
+    if (error) {
+      dispatch(
+        addToast({
+          message: 'Failed to load documents',
+          type: 'error',
+        })
+      );
+    }
+  }, [error, dispatch]);
+
   const handleStatusFilterChange = (
     e: React.ChangeEvent<HTMLSelectElement>
   ) => {
@@ -57,6 +84,10 @@ export default function DocumentsPage() {
 
   const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     dispatch(setDocumentFilters({ sort: e.target.value as any }));
+  };
+
+  const handlePageChange = (page: number) => {
+    dispatch(setDocumentsPage(page));
   };
 
   return (
@@ -68,6 +99,7 @@ export default function DocumentsPage() {
               className={styles.dropdown}
               value={filters.status}
               onChange={handleStatusFilterChange}
+              disabled={isLoading}
             >
               <option value="all">All Status</option>
               <option value="Published">Published</option>
@@ -78,6 +110,7 @@ export default function DocumentsPage() {
               className={styles.dropdown}
               value={filters.sort}
               onChange={handleSortChange}
+              disabled={isLoading}
             >
               <option value="recent">Most Recent</option>
               <option value="oldest">Oldest First</option>
@@ -85,11 +118,29 @@ export default function DocumentsPage() {
             </select>
           </div>
 
-          <DocumentList
-            documents={documents || []}
-            isLoading={isLoading}
-            onNewDocument={() => setShowCreateModal(true)}
-          />
+          {error ? (
+            <ErrorState
+              message="Failed to load documents"
+              onRetry={() => refetch()}
+            />
+          ) : (
+            <>
+              <DocumentList
+                documents={documents}
+                isLoading={isLoading}
+                onNewDocument={() => setShowCreateModal(true)}
+              />
+
+              {paginationInfo && !isLoading && (
+                <div className={styles.paginationContainer}>
+                  <Pagination
+                    pagination={paginationInfo}
+                    onPageChange={handlePageChange}
+                  />
+                </div>
+              )}
+            </>
+          )}
         </div>
 
         <div className={styles.documentPreview}>

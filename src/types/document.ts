@@ -14,3 +14,18 @@ export interface Document {
 export type DocumentStatus = 'Published' | 'Draft' | 'In Review';
 export type SortOption = 'recent' | 'oldest' | 'title';
 export type FilterOption = 'all' | DocumentStatus;
+
+// ADD PAGINATION TYPES
+export interface PaginationInfo {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrev: boolean;
+}
+
+export interface PaginatedDocumentsResponse {
+  documents: Document[];
+  pagination: PaginationInfo;
+}

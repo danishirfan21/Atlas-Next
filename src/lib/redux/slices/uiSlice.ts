@@ -39,6 +39,17 @@ interface ExtendedUIState extends UIState {
     sort: SortOption;
   };
   isEditingDocument: boolean;
+  selectedCollectionId: number | null;
+  searchFilters: {
+    status: string;
+    author: string;
+    dateFrom: string;
+    dateTo: string;
+  };
+  documentsPagination: {
+    page: number;
+    limit: number;
+  };
 }
 
 const initialState: ExtendedUIState = {
@@ -53,6 +64,17 @@ const initialState: ExtendedUIState = {
     sort: 'recent',
   },
   isEditingDocument: false,
+  selectedCollectionId: persistedState.selectedCollectionId || null,
+  searchFilters: {
+    status: 'all',
+    author: 'all',
+    dateFrom: '',
+    dateTo: '',
+  },
+  documentsPagination: {
+    page: 1,
+    limit: 10,
+  },
 };
 
 const uiSlice = createSlice({
@@ -141,6 +163,57 @@ const uiSlice = createSlice({
         state.hasUnsavedChanges = false;
       }
     },
+
+    setSelectedCollectionId: (state, action: PayloadAction<number | null>) => {
+      state.selectedCollectionId = action.payload;
+
+      // Persist to localStorage
+      if (typeof window !== 'undefined') {
+        try {
+          const current = localStorage.getItem('atlas_ui_state');
+          const data = current ? JSON.parse(current) : {};
+          localStorage.setItem(
+            'atlas_ui_state',
+            JSON.stringify({
+              ...data,
+              selectedCollectionId: action.payload,
+            })
+          );
+        } catch {}
+      }
+    },
+
+    setSearchFilters: (
+      state,
+      action: PayloadAction<Partial<{
+        status: string;
+        author: string;
+        dateFrom: string;
+        dateTo: string;
+      }>>
+    ) => {
+      state.searchFilters = {
+        ...state.searchFilters,
+        ...action.payload,
+      };
+    },
+
+    resetSearchFilters: (state) => {
+      state.searchFilters = {
+        status: 'all',
+        author: 'all',
+        dateFrom: '',
+        dateTo: '',
+      };
+    },
+
+    setDocumentsPage: (state, action: PayloadAction<number>) => {
+      state.documentsPagination.page = action.payload;
+    },
+
+    resetDocumentsPage: (state) => {
+      state.documentsPagination.page = 1;
+    },
   },
 });
 
@@ -154,6 +227,11 @@ export const {
   setSelectedDocumentId,
   setDocumentFilters,
   setIsEditingDocument,
+  setSelectedCollectionId,
+  setSearchFilters,
+  resetSearchFilters,
+  setDocumentsPage,
+  resetDocumentsPage,
 } = uiSlice.actions;
 
 export default uiSlice.reducer;

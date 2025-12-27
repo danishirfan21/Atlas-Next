@@ -190,6 +190,94 @@ export function initializeDb() {
       createdAt: new Date(now.getTime() - 40 * 24 * 60 * 60 * 1000),
       updatedAt: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000),
     },
+    {
+      id: 7,
+      title: 'Engineering Onboarding Guide',
+      snippet:
+        'Complete onboarding checklist for new engineering team members...',
+      body: `<p>Welcome to the engineering team! This guide will help you get set up and productive in your first week.</p>
+<p>Week 1 priorities include setting up your development environment, getting access to all necessary tools, and meeting your team members.</p>`,
+      author: 'Sarah Chen',
+      authorInitials: 'SC',
+      updatedAt: new Date(
+        now.getTime() - 5 * 24 * 60 * 60 * 1000
+      ).toISOString(),
+      status: 'Published',
+      views: 156,
+    },
+    {
+      id: 8,
+      title: 'Sprint Planning Process',
+      snippet:
+        'How we plan and execute two-week sprints across product teams...',
+      body: `<p>Our sprint planning process follows agile best practices with some customizations for our team structure.</p>
+<p>Each sprint is two weeks long, starting on Monday and ending on Friday of the second week.</p>`,
+      author: 'Marcus Rivera',
+      authorInitials: 'MR',
+      updatedAt: new Date(
+        now.getTime() - 6 * 24 * 60 * 60 * 1000
+      ).toISOString(),
+      status: 'Published',
+      views: 203,
+    },
+    {
+      id: 9,
+      title: 'Code Review Guidelines',
+      snippet: 'Standards and best practices for conducting code reviews...',
+      body: `<p>Code reviews are essential for maintaining code quality and knowledge sharing across the team.</p>
+<p>All pull requests require at least one approval before merging to main.</p>`,
+      author: 'David Park',
+      authorInitials: 'DP',
+      updatedAt: new Date(
+        now.getTime() - 7 * 24 * 60 * 60 * 1000
+      ).toISOString(),
+      status: 'Published',
+      views: 178,
+    },
+    {
+      id: 10,
+      title: 'Brand Guidelines 2025',
+      snippet:
+        'Updated brand guidelines including new logo usage and color palette...',
+      body: `<p>Our brand has evolved to better reflect our mission and values. These guidelines ensure consistency across all touchpoints.</p>
+<p>The primary brand colors are now deeper and more vibrant to stand out in digital contexts.</p>`,
+      author: 'Emma Wilson',
+      authorInitials: 'EW',
+      updatedAt: new Date(
+        now.getTime() - 8 * 24 * 60 * 60 * 1000
+      ).toISOString(),
+      status: 'Draft',
+      views: 89,
+    },
+    {
+      id: 11,
+      title: 'Remote Work Policy',
+      snippet:
+        'Flexible remote work options and expectations for hybrid teams...',
+      body: `<p>We support flexible work arrangements to help team members achieve work-life balance.</p>
+<p>Team members can work remotely up to 3 days per week, with Tuesdays and Thursdays as recommended in-office days.</p>`,
+      author: 'Rachel Kim',
+      authorInitials: 'RK',
+      updatedAt: new Date(
+        now.getTime() - 9 * 24 * 60 * 60 * 1000
+      ).toISOString(),
+      status: 'In Review',
+      views: 267,
+    },
+    {
+      id: 12,
+      title: 'Incident Response Playbook',
+      snippet: 'Step-by-step procedures for handling production incidents...',
+      body: `<p>This playbook provides clear procedures for responding to production incidents of varying severity.</p>
+<p>The incident commander is responsible for coordinating response efforts and communication.</p>`,
+      author: 'David Park',
+      authorInitials: 'DP',
+      updatedAt: new Date(
+        now.getTime() - 10 * 24 * 60 * 60 * 1000
+      ).toISOString(),
+      status: 'Published',
+      views: 312,
+    },
   ];
 
   // Generate activity feed from documents
@@ -230,6 +318,23 @@ export const db = {
   documents: {
     getAll: () => [...documents],
     getById: (id: number) => documents.find((d) => d.id === id),
+    getPaginated: (page: number = 1, limit: number = 10) => {
+      const startIndex = (page - 1) * limit;
+      const endIndex = startIndex + limit;
+      const paginatedDocs = documents.slice(startIndex, endIndex);
+
+      return {
+        documents: paginatedDocs,
+        pagination: {
+          page,
+          limit,
+          total: documents.length,
+          totalPages: Math.ceil(documents.length / limit),
+          hasNext: endIndex < documents.length,
+          hasPrev: page > 1,
+        },
+      };
+    },
     create: (data: Omit<Document, 'id' | 'updatedAt' | 'views'>) => {
       const doc: Document = {
         ...data,

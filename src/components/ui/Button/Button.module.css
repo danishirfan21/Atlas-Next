@@ -10,8 +10,13 @@
   gap: 6px;
 }
 
-.button:active {
+.button:active:not(:disabled) {
   transform: scale(0.98);
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .primary {
@@ -20,7 +25,7 @@
   padding: 10px 18px;
 }
 
-.primary:hover {
+.primary:hover:not(:disabled) {
   background: var(--primary-hover);
 }
 
@@ -31,7 +36,7 @@
   padding: 10px 18px;
 }
 
-.secondary:hover {
+.secondary:hover:not(:disabled) {
   background: #f9fafb;
 }
 
@@ -41,6 +46,6 @@
   padding: 8px;
 }
 
-.icon:hover {
+.icon:hover:not(:disabled) {
   color: var(--text-main);
 }

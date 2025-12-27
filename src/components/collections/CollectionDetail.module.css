@@ -1,0 +1,161 @@
+.container {
+  padding: 40px 60px;
+  max-width: 1200px;
+}
+
+.header {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.iconContainer {
+  width: 80px;
+  height: 80px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.icon {
+  font-size: 40px;
+}
+
+.info {
+  flex: 1;
+}
+
+.info h2 {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--text-main);
+}
+
+.description {
+  font-size: 16px;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin-bottom: 16px;
+}
+
+.stats {
+  display: flex;
+  gap: 20px;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.divider {
+  height: 1px;
+  background: var(--border-color);
+  margin: 32px 0;
+}
+
+.documentsSection {
+  margin-top: 32px;
+}
+
+.sectionTitle {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: var(--text-main);
+}
+
+.documentsList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.documentCard {
+  padding: 20px;
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.documentCard:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+.documentCard h4 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--text-main);
+}
+
+.documentCard p {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+.documentMeta {
+  display: flex;
+  gap: 8px;
+  font-size: 13px;
+  color: #9ca3af;
+}
+
+/* Skeleton loading */
+.skeleton {
+  padding: 40px 0;
+}
+
+.skeletonHeader {
+  height: 80px;
+  width: 100%;
+  margin-bottom: 16px;
+  background: linear-gradient(90deg, #f3f4f6 0%, #e5e7eb 50%, #f3f4f6 100%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s ease-in-out infinite;
+  border-radius: 4px;
+}
+
+.skeletonText {
+  height: 16px;
+  width: 100%;
+  margin-bottom: 12px;
+  background: linear-gradient(90deg, #f3f4f6 0%, #e5e7eb 50%, #f3f4f6 100%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s ease-in-out infinite;
+  border-radius: 4px;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Responsive */
+@media (max-width: 767px) {
+  .container {
+    padding: 30px 20px;
+  }
+
+  .header {
+    flex-direction: column;
+  }
+
+  .info h2 {
+    font-size: 24px;
+  }
+
+  .stats {
+    flex-direction: column;
+    gap: 8px;
+  }
+}

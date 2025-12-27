@@ -1,23 +1,25 @@
 import { apiSlice } from './apiSlice';
-import type { Document } from '@/types';
+import type { Document, PaginatedDocumentsResponse } from '@/types';
 
 export const documentsApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    getDocuments: builder.query<
-      Document[],
-      { status?: string; sort?: string; q?: string }
+    getDocuments: builder.query
+      PaginatedDocumentsResponse,
+      { status?: string; sort?: string; q?: string; page?: number; limit?: number }
     >({
-      query: ({ status = 'all', sort = 'recent', q = '' } = {}) => {
+      query: ({ status = 'all', sort = 'recent', q = '', page = 1, limit = 10 } = {}) => {
         const params = new URLSearchParams();
         if (status !== 'all') params.append('status', status);
         if (sort) params.append('sort', sort);
         if (q) params.append('q', q);
+        params.append('page', page.toString());
+        params.append('limit', limit.toString());
         return `/documents?${params.toString()}`;
       },
       providesTags: (result) =>
         result
           ? [
-              ...result.map(({ id }) => ({ type: 'Document' as const, id })),
+              ...result.documents.map(({ id }) => ({ type: 'Document' as const, id })),
               { type: 'Document', id: 'LIST' },
             ]
           : [{ type: 'Document', id: 'LIST' }],
@@ -37,7 +39,7 @@ export const documentsApi = apiSlice.injectEndpoints({
       invalidatesTags: [{ type: 'Document', id: 'LIST' }],
     }),
 
-    updateDocument: builder.mutation<
+    updateDocument: builder.mutation
       Document,
       { id: number } & Partial<Document>
     >({

@@ -44,8 +44,10 @@ export function Topbar() {
   const handlePrimaryAction = () => {
     // Context-aware action based on current page
     if (pathname === '/documents') {
-      // Trigger new document modal - handled by Documents page
       const event = new CustomEvent('openNewDocumentModal');
+      window.dispatchEvent(event);
+    } else if (pathname === '/collections') {
+      const event = new CustomEvent('openNewCollectionModal');
       window.dispatchEvent(event);
     } else {
       router.push('/documents');
@@ -107,7 +109,7 @@ export function Topbar() {
         </Button>
 
         <Button variant="primary" onClick={handlePrimaryAction}>
-          + New Document
+          + New {pathname === '/collections' ? 'Collection' : 'Document'}
         </Button>
 
         <Avatar initials="DK" size="sm" />

@@ -40,6 +40,11 @@
   border-color: var(--primary-blue);
 }
 
+.paginationContainer {
+  border-top: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
 .documentPreview {
   flex: 1;
   background: white;

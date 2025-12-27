@@ -1,0 +1,112 @@
+.results {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.resultCount {
+  font-size: 14px;
+  color: var(--text-muted);
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 8px;
+}
+
+.resultCount strong {
+  color: var(--text-main);
+  font-weight: 600;
+}
+
+.resultCard {
+  padding: 20px;
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.resultCard:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+  border-color: var(--primary-blue);
+}
+
+.resultHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.resultTitle {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-main);
+  flex: 1;
+}
+
+.resultSnippet {
+  font-size: 14px;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin-bottom: 12px;
+}
+
+.resultMeta {
+  display: flex;
+  gap: 8px;
+  font-size: 13px;
+  color: #9ca3af;
+}
+
+/* Skeleton loading */
+.skeleton {
+  padding: 20px;
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+}
+
+.skeletonTitle {
+  height: 20px;
+  width: 60%;
+  margin-bottom: 12px;
+  background: linear-gradient(90deg, #f3f4f6 0%, #e5e7eb 50%, #f3f4f6 100%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s ease-in-out infinite;
+  border-radius: 4px;
+}
+
+.skeletonText {
+  height: 14px;
+  width: 100%;
+  margin-bottom: 8px;
+  background: linear-gradient(90deg, #f3f4f6 0%, #e5e7eb 50%, #f3f4f6 100%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s ease-in-out infinite;
+  border-radius: 4px;
+}
+
+.skeletonText:last-of-type {
+  width: 80%;
+}
+
+.skeletonMeta {
+  height: 12px;
+  width: 40%;
+  background: linear-gradient(90deg, #f3f4f6 0%, #e5e7eb 50%, #f3f4f6 100%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s ease-in-out infinite;
+  border-radius: 4px;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
