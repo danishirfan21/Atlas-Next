@@ -5,6 +5,7 @@ import type { ActivityItem } from '@/types';
 import { Avatar } from '@/components/ui/Avatar/Avatar';
 import { formatRelativeTime } from '@/lib/utils/helpers';
 import styles from './ActivityTimeline.module.css';
+import { EmptyState } from '../ui';
 
 interface ActivityTimelineProps {
   activities: ActivityItem[];
@@ -40,21 +41,23 @@ export function ActivityTimeline({
 
   if (activities.length === 0) {
     return (
-      <div className="empty-state">
-        <svg
-          width="48"
-          height="48"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-        >
-          <circle cx="12" cy="12" r="10"></circle>
-          <polyline points="12 6 12 12 16 14"></polyline>
-        </svg>
-        <h3>No activity yet</h3>
-        <p>Activity will appear here as you work on documents</p>
-      </div>
+      <EmptyState
+        icon={
+          <svg
+            width="64"
+            height="64"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+          >
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+        }
+        title="No activity yet"
+        description="Activity will appear here as you create, edit, and publish documents. All team actions are tracked automatically."
+      />
     );
   }
 

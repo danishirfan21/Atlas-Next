@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/Badge/Badge';
 import { formatRelativeTime } from '@/lib/utils/helpers';
 import type { Document } from '@/types';
 import styles from './DocumentList.module.css';
+import { EmptyState } from '../ui';
 
 interface DocumentListProps {
   documents: Document[];
@@ -52,30 +53,45 @@ export function DocumentList({
   if (documents.length === 0) {
     return (
       <div className={styles.scrollable}>
-        <div className="empty-state">
-          <svg
-            width="48"
-            height="48"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-          >
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-            <polyline points="14 2 14 8 20 8"></polyline>
-          </svg>
-          <h3>{searchQuery ? 'No documents found' : 'No documents'}</h3>
-          <p>
-            {searchQuery
-              ? 'Try adjusting your search or filters'
-              : 'Create your first document to get started'}
-          </p>
-          {!searchQuery && (
-            <button className={styles.createButton} onClick={onNewDocument}>
-              + New Document
-            </button>
-          )}
-        </div>
+        {searchQuery ? (
+          <EmptyState
+            icon={
+              <svg
+                width="64"
+                height="64"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+              >
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+            }
+            title="No documents found"
+            description={`No documents match "${searchQuery}". Try adjusting your search or filters.`}
+          />
+        ) : (
+          <EmptyState
+            icon={
+              <svg
+                width="64"
+                height="64"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+              >
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+              </svg>
+            }
+            title="No documents yet"
+            description="Create your first document to get started with Atlas. Documents help you organize and share knowledge with your team."
+            actionLabel="+ New Document"
+            onAction={onNewDocument}
+          />
+        )}
       </div>
     );
   }

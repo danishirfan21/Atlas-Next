@@ -9,3 +9,5 @@ export { ToastContainer } from './Toast/Toast';
 export { Pagination } from './Pagination/Pagination';
 export { ErrorBoundary } from './ErrorBoundary/ErrorBoundary';
 export { ErrorState } from './ErrorState/ErrorState';
+export { InlineError } from './InlineError/InlineError';
+export { EmptyState } from './EmptyState/EmptyState';

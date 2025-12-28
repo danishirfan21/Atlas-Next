@@ -98,25 +98,26 @@ export default function CollectionsPage() {
   if (!collections || collections.length === 0) {
     return (
       <div className={styles.container}>
-        <div className="empty-state">
-          <svg
-            width="64"
-            height="64"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-          >
-            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-            <line x1="3" y1="9" x2="21" y2="9"></line>
-            <line x1="9" y1="21" x2="9" y2="9"></line>
-          </svg>
-          <h3>No collections yet</h3>
-          <p>Create your first collection to organize documents</p>
-          <Button variant="primary" onClick={() => setShowCreateModal(true)}>
-            + New Collection
-          </Button>
-        </div>
+        <EmptyState
+          icon={
+            <svg
+              width="80"
+              height="80"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+            >
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="3" y1="9" x2="21" y2="9"></line>
+              <line x1="9" y1="21" x2="9" y2="9"></line>
+            </svg>
+          }
+          title="No collections yet"
+          description="Collections help you organize documents by topic, team, or project. Create your first collection to get started."
+          actionLabel="+ New Collection"
+          onAction={() => setShowCreateModal(true)}
+        />
 
         {showCreateModal && (
           <CreateCollectionModal onClose={() => setShowCreateModal(false)} />

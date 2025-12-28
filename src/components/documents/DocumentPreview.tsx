@@ -15,6 +15,7 @@ import { Badge } from '@/components/ui/Badge/Badge';
 import { Button } from '@/components/ui/Button/Button';
 import { formatRelativeTime } from '@/lib/utils/helpers';
 import styles from './DocumentPreview.module.css';
+import { EmptyState } from '../ui';
 
 export function DocumentPreview() {
   const dispatch = useAppDispatch();
@@ -111,21 +112,23 @@ export function DocumentPreview() {
 
   if (!selectedDocumentId) {
     return (
-      <div className="empty-state">
-        <svg
-          width="48"
-          height="48"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-        >
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-          <polyline points="14 2 14 8 20 8"></polyline>
-        </svg>
-        <h3>No document selected</h3>
-        <p>Select a document from the list to view its contents</p>
-      </div>
+      <EmptyState
+        icon={
+          <svg
+            width="64"
+            height="64"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+          >
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+          </svg>
+        }
+        title="No document selected"
+        description="Select a document from the list to view and edit its contents. You can also create a new document to get started."
+      />
     );
   }
 

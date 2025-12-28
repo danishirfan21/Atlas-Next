@@ -8,6 +8,7 @@ import type { Document } from '@/types';
 import { Badge } from '@/components/ui/Badge/Badge';
 import { formatRelativeTime } from '@/lib/utils/helpers';
 import styles from './SearchResults.module.css';
+import { EmptyState } from '../ui';
 
 interface SearchResultsProps {
   results: Document[];
@@ -51,21 +52,27 @@ export function SearchResults({
 
   if (results.length === 0) {
     return (
-      <div className="empty-state">
-        <svg
-          width="48"
-          height="48"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-        >
-          <circle cx="11" cy="11" r="8"></circle>
-          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-        </svg>
-        <h3>No results found</h3>
-        <p>Try adjusting your search or filters</p>
-      </div>
+      <EmptyState
+        icon={
+          <svg
+            width="64"
+            height="64"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+          >
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        }
+        title="No results found"
+        description={
+          searchQuery
+            ? `No documents match "${searchQuery}". Try using different keywords or adjusting your filters.`
+            : 'Enter a search query to find documents across your workspace.'
+        }
+      />
     );
   }
 
