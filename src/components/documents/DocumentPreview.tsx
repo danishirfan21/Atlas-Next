@@ -1,6 +1,12 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+} from 'react';
 import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
 import {
   useGetDocumentQuery,
@@ -11,11 +17,9 @@ import {
   setUnsavedChanges,
   addToast,
 } from '@/lib/redux/slices/uiSlice';
-import { Badge } from '@/components/ui/Badge/Badge';
-import { Button } from '@/components/ui/Button/Button';
+import { Badge, Button, EmptyState } from '@/components/ui';
 import { formatRelativeTime } from '@/lib/utils/helpers';
 import styles from './DocumentPreview.module.css';
-import { EmptyState } from '../ui';
 
 export function DocumentPreview() {
   const dispatch = useAppDispatch();
@@ -54,19 +58,19 @@ export function DocumentPreview() {
     }
   }, [document, isEditing]);
 
-  const handleEdit = () => {
+  const handleEdit = useCallback(() => {
     dispatch(setIsEditingDocument(true));
-  };
+  }, [dispatch]);
 
-  const handleCancel = () => {
+  const handleCancel = useCallback(() => {
     if (hasUnsavedChanges) {
       if (!confirm('Discard unsaved changes?')) return;
     }
     dispatch(setIsEditingDocument(false));
     dispatch(setUnsavedChanges(false));
-  };
+  }, [hasUnsavedChanges, dispatch]);
 
-  const handleSave = async () => {
+  const handleSave = useCallback(async () => {
     if (!document) return;
 
     try {
@@ -90,25 +94,38 @@ export function DocumentPreview() {
         addToast({ message: 'Document saved successfully', type: 'success' })
       );
     } catch (error: any) {
-      const errorMessage = error?.data?.error || error?.error || 'Failed to save document';
+      const errorMessage =
+        error?.data?.error || error?.error || 'Failed to save document';
       dispatch(
-        addToast({ 
-          message: `${errorMessage}. Your changes were not saved.`, 
-          type: 'error' 
+        addToast({
+          message: `${errorMessage}. Your changes were not saved.`,
+          type: 'error',
         })
       );
     }
-  };
+  }, [document, editTitle, editBody, updateDocument, dispatch]);
 
-  const handleTitleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setEditTitle(e.target.value);
-    dispatch(setUnsavedChanges(true));
-  };
+  const handleTitleChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      setEditTitle(e.target.value);
+      dispatch(setUnsavedChanges(true));
+    },
+    [dispatch]
+  );
 
-  const handleBodyChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setEditBody(e.target.value);
-    dispatch(setUnsavedChanges(true));
-  };
+  const handleBodyChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      setEditBody(e.target.value);
+      dispatch(setUnsavedChanges(true));
+    },
+    [dispatch]
+  );
+
+  // Memoize the rendered HTML body to prevent re-renders
+  const renderedBody = useMemo(() => {
+    if (!document) return null;
+    return <div dangerouslySetInnerHTML={{ __html: document.body }} />;
+  }, [document?.body]);
 
   if (!selectedDocumentId) {
     return (
@@ -177,7 +194,7 @@ export function DocumentPreview() {
             rows={20}
           />
         ) : (
-          <div dangerouslySetInnerHTML={{ __html: document.body }} />
+          renderedBody
         )}
       </div>
 

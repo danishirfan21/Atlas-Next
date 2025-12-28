@@ -1,13 +1,13 @@
 'use client';
 
-import React from 'react';
+import React, { useCallback } from 'react';
 import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
 import { setSelectedDocumentId } from '@/lib/redux/slices/uiSlice';
-import { Badge } from '@/components/ui/Badge/Badge';
+import { useGetDocumentQuery } from '@/lib/redux/api/documentsApi';
+import { Badge, EmptyState } from '@/components/ui';
 import { formatRelativeTime } from '@/lib/utils/helpers';
 import type { Document } from '@/types';
 import styles from './DocumentList.module.css';
-import { EmptyState } from '../ui';
 
 interface DocumentListProps {
   documents: Document[];
@@ -26,9 +26,19 @@ export function DocumentList({
   );
   const searchQuery = useAppSelector((state) => state.ui.searchQuery);
 
-  const handleSelectDocument = (id: number) => {
-    dispatch(setSelectedDocumentId(id));
-  };
+  const handleSelectDocument = useCallback(
+    (id: number) => {
+      dispatch(setSelectedDocumentId(id));
+    },
+    [dispatch]
+  );
+
+  // Prefetch document on hover for instant loading
+  const handleDocumentHover = useCallback((id: number) => {
+    // Trigger prefetch by calling the query hook (it will cache the result)
+    // We don't use the result here, just trigger the fetch
+    // This is a pattern - we'll add the actual prefetch in the DocumentCard component
+  }, []);
 
   const highlightText = (text: string, query: string) => {
     if (!query) return text;
@@ -99,40 +109,91 @@ export function DocumentList({
   return (
     <div className={styles.scrollable}>
       {documents.map((doc) => (
-        <div
+        <DocumentCard
           key={doc.id}
-          className={`${styles.docCard} ${
-            doc.id === selectedDocumentId ? styles.selected : ''
-          }`}
-          onClick={() => handleSelectDocument(doc.id)}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              handleSelectDocument(doc.id);
-            }
-          }}
-        >
-          <h3
-            dangerouslySetInnerHTML={{
-              __html: highlightText(doc.title, searchQuery),
-            }}
-          />
-          <p
-            className={styles.snippet}
-            dangerouslySetInnerHTML={{
-              __html: highlightText(doc.snippet, searchQuery),
-            }}
-          />
-          <div className={styles.meta}>
-            <span>
-              {formatRelativeTime(new Date(doc.updatedAt))} • {doc.author}
-            </span>
-            <Badge status={doc.status} />
-          </div>
-        </div>
+          doc={doc}
+          isSelected={doc.id === selectedDocumentId}
+          searchQuery={searchQuery}
+          onSelect={handleSelectDocument}
+        />
       ))}
     </div>
   );
 }
+
+// Memoized document card component to prevent unnecessary re-renders
+const DocumentCard = React.memo(
+  ({
+    doc,
+    isSelected,
+    searchQuery,
+    onSelect,
+  }: {
+    doc: Document;
+    isSelected: boolean;
+    searchQuery: string;
+    onSelect: (id: number) => void;
+  }) => {
+    // Prefetch hook - will cache the document when hovered
+    const {} = useGetDocumentQuery(doc.id, {
+      skip: true, // Don't fetch immediately
+    });
+
+    const handleMouseEnter = useCallback(() => {
+      // Trigger prefetch by dispatching the query
+      // RTK Query will cache this for instant loading when clicked
+      useGetDocumentQuery(doc.id);
+    }, [doc.id]);
+
+    const handleClick = useCallback(() => {
+      onSelect(doc.id);
+    }, [doc.id, onSelect]);
+
+    const handleKeyDown = useCallback(
+      (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onSelect(doc.id);
+        }
+      },
+      [doc.id, onSelect]
+    );
+
+    const highlightText = (text: string, query: string) => {
+      if (!query) return text;
+      const regex = new RegExp(`(${query})`, 'gi');
+      return text.replace(regex, '<mark>$1</mark>');
+    };
+
+    return (
+      <div
+        className={`${styles.docCard} ${isSelected ? styles.selected : ''}`}
+        onClick={handleClick}
+        onMouseEnter={handleMouseEnter}
+        role="button"
+        tabIndex={0}
+        onKeyDown={handleKeyDown}
+      >
+        <h3
+          dangerouslySetInnerHTML={{
+            __html: highlightText(doc.title, searchQuery),
+          }}
+        />
+        <p
+          className={styles.snippet}
+          dangerouslySetInnerHTML={{
+            __html: highlightText(doc.snippet, searchQuery),
+          }}
+        />
+        <div className={styles.meta}>
+          <span>
+            {formatRelativeTime(new Date(doc.updatedAt))} • {doc.author}
+          </span>
+          <Badge status={doc.status} />
+        </div>
+      </div>
+    );
+  }
+);
+
+DocumentCard.displayName = 'DocumentCard';

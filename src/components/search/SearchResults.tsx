@@ -1,14 +1,13 @@
 'use client';
 
-import React from 'react';
+import React, { useCallback } from 'react';
 import { useAppDispatch } from '@/lib/redux/hooks';
 import { setSelectedDocumentId } from '@/lib/redux/slices/uiSlice';
 import { useRouter } from 'next/navigation';
 import type { Document } from '@/types';
-import { Badge } from '@/components/ui/Badge/Badge';
+import { Badge, EmptyState } from '@/components/ui';
 import { formatRelativeTime } from '@/lib/utils/helpers';
 import styles from './SearchResults.module.css';
-import { EmptyState } from '../ui';
 
 interface SearchResultsProps {
   results: Document[];
@@ -24,10 +23,13 @@ export function SearchResults({
   const dispatch = useAppDispatch();
   const router = useRouter();
 
-  const handleResultClick = (doc: Document) => {
-    dispatch(setSelectedDocumentId(doc.id));
-    router.push('/documents');
-  };
+  const handleResultClick = useCallback(
+    (doc: Document) => {
+      dispatch(setSelectedDocumentId(doc.id));
+      router.push('/documents');
+    },
+    [dispatch, router]
+  );
 
   const highlightText = (text: string, query: string) => {
     if (!query) return text;
@@ -90,37 +92,67 @@ export function SearchResults({
       </div>
 
       {results.map((doc) => (
-        <div
+        <SearchResultCard
           key={doc.id}
-          className={styles.resultCard}
-          onClick={() => handleResultClick(doc)}
-        >
-          <div className={styles.resultHeader}>
-            <h3
-              className={styles.resultTitle}
-              dangerouslySetInnerHTML={{
-                __html: highlightText(doc.title, searchQuery),
-              }}
-            />
-            <Badge status={doc.status} />
-          </div>
-
-          <p
-            className={styles.resultSnippet}
-            dangerouslySetInnerHTML={{
-              __html: highlightText(doc.snippet, searchQuery),
-            }}
-          />
-
-          <div className={styles.resultMeta}>
-            <span>{doc.author}</span>
-            <span>•</span>
-            <span>{formatRelativeTime(new Date(doc.updatedAt))}</span>
-            <span>•</span>
-            <span>👁 {doc.views} views</span>
-          </div>
-        </div>
+          doc={doc}
+          searchQuery={searchQuery}
+          onClick={handleResultClick}
+        />
       ))}
     </div>
   );
 }
+
+// Memoized result card to prevent unnecessary re-renders
+const SearchResultCard = React.memo(
+  ({
+    doc,
+    searchQuery,
+    onClick,
+  }: {
+    doc: Document;
+    searchQuery: string;
+    onClick: (doc: Document) => void;
+  }) => {
+    const handleClick = useCallback(() => {
+      onClick(doc);
+    }, [doc, onClick]);
+
+    const highlightText = (text: string, query: string) => {
+      if (!query) return text;
+      const regex = new RegExp(`(${query})`, 'gi');
+      return text.replace(regex, '<mark>$1</mark>');
+    };
+
+    return (
+      <div className={styles.resultCard} onClick={handleClick}>
+        <div className={styles.resultHeader}>
+          <h3
+            className={styles.resultTitle}
+            dangerouslySetInnerHTML={{
+              __html: highlightText(doc.title, searchQuery),
+            }}
+          />
+          <Badge status={doc.status} />
+        </div>
+
+        <p
+          className={styles.resultSnippet}
+          dangerouslySetInnerHTML={{
+            __html: highlightText(doc.snippet, searchQuery),
+          }}
+        />
+
+        <div className={styles.resultMeta}>
+          <span>{doc.author}</span>
+          <span>•</span>
+          <span>{formatRelativeTime(new Date(doc.updatedAt))}</span>
+          <span>•</span>
+          <span>👁 {doc.views} views</span>
+        </div>
+      </div>
+    );
+  }
+);
+
+SearchResultCard.displayName = 'SearchResultCard';

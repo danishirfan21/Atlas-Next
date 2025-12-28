@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useCallback } from 'react';
 import type { Collection } from '@/types';
 import styles from './CollectionCard.module.css';
 
@@ -10,23 +10,28 @@ interface CollectionCardProps {
   onClick: () => void;
 }
 
-export function CollectionCard({
+export const CollectionCard = React.memo(function CollectionCard({
   collection,
   isSelected,
   onClick,
 }: CollectionCardProps) {
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        onClick();
+      }
+    },
+    [onClick]
+  );
+
   return (
     <div
       className={`${styles.card} ${isSelected ? styles.selected : ''}`}
       onClick={onClick}
       role="button"
       tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          onClick();
-        }
-      }}
+      onKeyDown={handleKeyDown}
     >
       <div
         className={styles.iconContainer}
@@ -44,4 +49,4 @@ export function CollectionCard({
       </div>
     </div>
   );
-}
+});

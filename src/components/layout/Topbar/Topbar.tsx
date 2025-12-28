@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { setSearchQuery } from '@/lib/redux/slices/uiSlice';
+import { debounce } from '@/lib/utils/helpers';
 import styles from './Topbar.module.css';
 import { Avatar } from '@/components/ui/Avatar/Avatar';
 import { Button } from '@/components/ui/Button/Button';
@@ -14,14 +15,10 @@ import { capitalizeFirst } from '@/lib/utils/helpers';
  * 
  * Top navigation bar with:
  * - Breadcrumb showing current page
- * - Global search
+ * - Debounced global search (300ms)
  * - Refresh button
  * - Primary action button (context-aware)
  * - User avatar
- * 
- * Why 'use client'?
- * - Uses usePathname() for breadcrumb
- * - Interactive search and buttons
  */
 
 export function Topbar() {
@@ -54,19 +51,29 @@ export function Topbar() {
     }
   };
 
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Memoized debounced search function (only recreates if dispatch changes)
+  const debouncedDispatch = useMemo(
+    () => debounce((value: string) => {
+      dispatch(setSearchQuery(value));
+    }, 300),
+    [dispatch]
+  );
+
+  // Optimized search handler
+  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setLocalSearchQuery(value);
-    
-    // Debounce the Redux update
-    setTimeout(() => {
-      dispatch(setSearchQuery(value));
-    }, 300);
-  };
+    debouncedDispatch(value);
+  }, [debouncedDispatch]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     dispatch(setSearchQuery(localSearchQuery));
+    
+    // Navigate to search page if not already there
+    if (pathname !== '/search') {
+      router.push('/search');
+    }
   };
 
   return (

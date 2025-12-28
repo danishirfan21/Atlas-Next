@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
 import { setSearchQuery, addToast } from '@/lib/redux/slices/uiSlice';
@@ -23,7 +23,7 @@ export default function SearchPage() {
 
   const [localQuery, setLocalQuery] = useState(urlQuery || reduxQuery);
 
-  // Debounced search - updates Redux & URL
+  // Memoized debounced search - updates Redux & URL
   const debouncedSearch = useMemo(
     () =>
       debounce((query: string) => {
@@ -41,12 +41,15 @@ export default function SearchPage() {
     [dispatch, router, searchParams]
   );
 
-  // Handle input change
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setLocalQuery(value);
-    debouncedSearch(value);
-  };
+  // Optimized input change handler
+  const handleSearchChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+      setLocalQuery(value);
+      debouncedSearch(value);
+    },
+    [debouncedSearch]
+  );
 
   // Sync URL query to local state on mount
   useEffect(() => {
@@ -56,7 +59,7 @@ export default function SearchPage() {
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // RTK Query - only runs when query or filters change
+  // RTK Query - automatically deduplicates requests
   const {
     data: results,
     isLoading,
