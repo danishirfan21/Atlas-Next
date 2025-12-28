@@ -37,6 +37,18 @@ export default function DocumentsPage() {
   const documents = data?.documents || [];
   const paginationInfo = data?.pagination;
 
+  // Restore persisted state on mount
+  useEffect(() => {
+    // If we have a persisted document ID but it's not in the current list,
+    // keep it selected (it will load when user navigates)
+    if (
+      selectedDocumentId &&
+      !documents.find((d) => d.id === selectedDocumentId)
+    ) {
+      // Document exists but not in current filtered view - that's ok
+    }
+  }, [selectedDocumentId, documents]);
+
   // Auto-select first document on load if none selected
   useEffect(() => {
     if (documents && documents.length > 0 && !selectedDocumentId) {

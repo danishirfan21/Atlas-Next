@@ -5,6 +5,7 @@ import { ToastContainer } from '@/components/ui/Toast/Toast';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary/ErrorBoundary';
 import { Providers } from './providers';
 import '@/styles/globals.css';
+import { PersistenceIndicator } from '@/components/ui/PersistenceIndicator/PersistenceIndicator';
 
 export const metadata: Metadata = {
   title: 'Atlas - Internal Knowledge Management',
@@ -48,6 +49,9 @@ export default function RootLayout({
 
             {/* Toast Notifications */}
             <ToastContainer />
+
+            {/* Persistence Indicator */}
+            <PersistenceIndicator />
           </Providers>
         </ErrorBoundary>
       </body>

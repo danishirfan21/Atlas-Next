@@ -11,3 +11,4 @@ export { ErrorBoundary } from './ErrorBoundary/ErrorBoundary';
 export { ErrorState } from './ErrorState/ErrorState';
 export { InlineError } from './InlineError/InlineError';
 export { EmptyState } from './EmptyState/EmptyState';
+export { PersistenceIndicator } from './PersistenceIndicator/PersistenceIndicator';

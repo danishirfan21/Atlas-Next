@@ -6,30 +6,20 @@ import type {
   FilterOption,
   SortOption,
 } from '@/types';
+import {
+  loadPersistedState,
+  savePersistedState,
+} from '@/lib/utils/persistence';
 
 /**
  * UI Slice - Manages global UI state
  *
- * Why Redux for UI state?
+ * Features:
  * - Centralized state accessible from any component
  * - Time-travel debugging with Redux DevTools
  * - Predictable state updates via actions
  * - Persisted to localStorage for continuity
  */
-
-// Load persisted state from localStorage
-const loadPersistedState = () => {
-  if (typeof window === 'undefined') return {};
-
-  try {
-    const saved = localStorage.getItem('atlas_ui_state');
-    return saved ? JSON.parse(saved) : {};
-  } catch {
-    return {};
-  }
-};
-
-const persistedState = loadPersistedState();
 
 interface ExtendedUIState extends UIState {
   toasts: Toast[];
@@ -50,21 +40,28 @@ interface ExtendedUIState extends UIState {
     page: number;
     limit: number;
   };
+  viewPreferences: {
+    documentsViewMode: 'list' | 'grid';
+    theme: 'light' | 'dark';
+  };
 }
+
+// Load persisted state
+const persistedState = loadPersistedState();
 
 const initialState: ExtendedUIState = {
   currentPage: 'dashboard',
-  sidebarCollapsed: false,
+  sidebarCollapsed: persistedState.sidebarCollapsed ?? false,
   searchQuery: '',
   hasUnsavedChanges: false,
   toasts: [],
-  selectedDocumentId: persistedState.selectedDocumentId || null,
-  documentFilters: persistedState.documentFilters || {
+  selectedDocumentId: persistedState.selectedDocumentId ?? null,
+  documentFilters: persistedState.documentFilters ?? {
     status: 'all',
     sort: 'recent',
   },
   isEditingDocument: false,
-  selectedCollectionId: persistedState.selectedCollectionId || null,
+  selectedCollectionId: persistedState.selectedCollectionId ?? null,
   searchFilters: {
     status: 'all',
     author: 'all',
@@ -74,6 +71,10 @@ const initialState: ExtendedUIState = {
   documentsPagination: {
     page: 1,
     limit: 10,
+  },
+  viewPreferences: persistedState.viewPreferences ?? {
+    documentsViewMode: 'list',
+    theme: 'light',
   },
 };
 
@@ -87,6 +88,9 @@ const uiSlice = createSlice({
 
     toggleSidebar: (state) => {
       state.sidebarCollapsed = !state.sidebarCollapsed;
+
+      // Persist to localStorage
+      savePersistedState({ sidebarCollapsed: state.sidebarCollapsed });
     },
 
     setSearchQuery: (state, action: PayloadAction<string>) => {
@@ -115,19 +119,7 @@ const uiSlice = createSlice({
       state.hasUnsavedChanges = false;
 
       // Persist to localStorage
-      if (typeof window !== 'undefined') {
-        try {
-          const current = localStorage.getItem('atlas_ui_state');
-          const data = current ? JSON.parse(current) : {};
-          localStorage.setItem(
-            'atlas_ui_state',
-            JSON.stringify({
-              ...data,
-              selectedDocumentId: action.payload,
-            })
-          );
-        } catch {}
-      }
+      savePersistedState({ selectedDocumentId: action.payload });
     },
 
     setDocumentFilters: (
@@ -142,19 +134,7 @@ const uiSlice = createSlice({
       }
 
       // Persist to localStorage
-      if (typeof window !== 'undefined') {
-        try {
-          const current = localStorage.getItem('atlas_ui_state');
-          const data = current ? JSON.parse(current) : {};
-          localStorage.setItem(
-            'atlas_ui_state',
-            JSON.stringify({
-              ...data,
-              documentFilters: state.documentFilters,
-            })
-          );
-        } catch {}
-      }
+      savePersistedState({ documentFilters: state.documentFilters });
     },
 
     setIsEditingDocument: (state, action: PayloadAction<boolean>) => {
@@ -168,29 +148,19 @@ const uiSlice = createSlice({
       state.selectedCollectionId = action.payload;
 
       // Persist to localStorage
-      if (typeof window !== 'undefined') {
-        try {
-          const current = localStorage.getItem('atlas_ui_state');
-          const data = current ? JSON.parse(current) : {};
-          localStorage.setItem(
-            'atlas_ui_state',
-            JSON.stringify({
-              ...data,
-              selectedCollectionId: action.payload,
-            })
-          );
-        } catch {}
-      }
+      savePersistedState({ selectedCollectionId: action.payload });
     },
 
     setSearchFilters: (
       state,
-      action: PayloadAction<Partial<{
-        status: string;
-        author: string;
-        dateFrom: string;
-        dateTo: string;
-      }>>
+      action: PayloadAction<
+        Partial<{
+          status: string;
+          author: string;
+          dateFrom: string;
+          dateTo: string;
+        }>
+      >
     ) => {
       state.searchFilters = {
         ...state.searchFilters,
@@ -214,6 +184,29 @@ const uiSlice = createSlice({
     resetDocumentsPage: (state) => {
       state.documentsPagination.page = 1;
     },
+
+    // View preferences
+    setViewPreference: (
+      state,
+      action: PayloadAction<{
+        key: keyof ExtendedUIState['viewPreferences'];
+        value: string;
+      }>
+    ) => {
+      const { key, value } = action.payload;
+      (state.viewPreferences as any)[key] = value;
+
+      // Persist to localStorage
+      savePersistedState({ viewPreferences: state.viewPreferences });
+    },
+
+    toggleDocumentsViewMode: (state) => {
+      state.viewPreferences.documentsViewMode =
+        state.viewPreferences.documentsViewMode === 'list' ? 'grid' : 'list';
+
+      // Persist to localStorage
+      savePersistedState({ viewPreferences: state.viewPreferences });
+    },
   },
 });
 
@@ -232,6 +225,8 @@ export const {
   resetSearchFilters,
   setDocumentsPage,
   resetDocumentsPage,
+  setViewPreference,
+  toggleDocumentsViewMode,
 } = uiSlice.actions;
 
 export default uiSlice.reducer;
