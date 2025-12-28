@@ -3,9 +3,10 @@ import { Sidebar } from '@/components/layout/Sidebar/Sidebar';
 import { Topbar } from '@/components/layout/Topbar/Topbar';
 import { ToastContainer } from '@/components/ui/Toast/Toast';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary/ErrorBoundary';
+import { PersistenceIndicator } from '@/components/ui/PersistenceIndicator/PersistenceIndicator';
+import { KeyboardShortcutsProvider } from '@/components/providers/KeyboardShortcutsProvider';
 import { Providers } from './providers';
 import '@/styles/globals.css';
-import { PersistenceIndicator } from '@/components/ui/PersistenceIndicator/PersistenceIndicator';
 
 export const metadata: Metadata = {
   title: 'Atlas - Internal Knowledge Management',
@@ -22,36 +23,42 @@ export default function RootLayout({
       <body>
         <ErrorBoundary>
           <Providers>
-            <div
-              style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}
-            >
-              {/* Left Sidebar - Fixed width, always visible */}
-              <Sidebar />
-
-              {/* Main Content Area */}
-              <main
-                style={{
-                  flex: 1,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  overflow: 'hidden',
-                }}
+            <KeyboardShortcutsProvider>
+              <div
+                style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}
               >
-                {/* Top Bar - Fixed height */}
-                <Topbar />
+                {/* Left Sidebar - Fixed width, always visible */}
+                <Sidebar />
 
-                {/* Page Content - Scrollable */}
-                <div style={{ flex: 1, overflow: 'auto' }}>
-                  <ErrorBoundary>{children}</ErrorBoundary>
-                </div>
-              </main>
-            </div>
+                {/* Main Content Area */}
+                <main
+                  style={{
+                    flex: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    overflow: 'hidden',
+                  }}
+                >
+                  {/* Top Bar - Fixed height */}
+                  <Topbar />
 
-            {/* Toast Notifications */}
-            <ToastContainer />
+                  {/* Page Content - Scrollable */}
+                  <div
+                    id="main-content"
+                    style={{ flex: 1, overflow: 'auto' }}
+                    role="main"
+                  >
+                    <ErrorBoundary>{children}</ErrorBoundary>
+                  </div>
+                </main>
+              </div>
 
-            {/* Persistence Indicator */}
-            <PersistenceIndicator />
+              {/* Toast Notifications */}
+              <ToastContainer />
+
+              {/* Persistence Indicator */}
+              <PersistenceIndicator />
+            </KeyboardShortcutsProvider>
           </Providers>
         </ErrorBoundary>
       </body>

@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useCreateDocumentMutation } from '@/lib/redux/api/documentsApi';
 import { useAppDispatch } from '@/lib/redux/hooks';
 import { setSelectedDocumentId, addToast } from '@/lib/redux/slices/uiSlice';
 import { Button } from '@/components/ui/Button/Button';
+import { useFocusTrap } from '@/lib/hooks/useFocusTrap';
 import styles from './CreateDocumentModal.module.css';
 
 interface CreateDocumentModalProps {
@@ -16,6 +17,21 @@ export function CreateDocumentModal({ onClose }: CreateDocumentModalProps) {
   const [body, setBody] = useState('');
   const [createDocument, { isLoading }] = useCreateDocumentMutation();
   const dispatch = useAppDispatch();
+
+  // Focus trap
+  const modalRef = useFocusTrap<HTMLDivElement>(true);
+
+  // Close on Escape key
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    window.addEventListener('keydown', handleEscape);
+    return () => window.removeEventListener('keydown', handleEscape);
+  }, [onClose]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,25 +54,42 @@ export function CreateDocumentModal({ onClose }: CreateDocumentModalProps) {
       }).unwrap();
 
       dispatch(setSelectedDocumentId(newDoc.id));
-      dispatch(addToast({ message: 'Document created successfully', type: 'success' }));
+      dispatch(
+        addToast({ message: 'Document created successfully', type: 'success' })
+      );
       onClose();
     } catch (error: any) {
-      const errorMessage = error?.data?.error || error?.error || 'Failed to create document';
+      const errorMessage =
+        error?.data?.error || error?.error || 'Failed to create document';
       dispatch(
-        addToast({ 
-          message: `${errorMessage}. Please try again.`, 
-          type: 'error' 
+        addToast({
+          message: `${errorMessage}. Please try again.`,
+          type: 'error',
         })
       );
     }
   };
 
   return (
-    <div className={styles.overlay} onClick={onClose}>
-      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+    <div
+      className={styles.overlay}
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-title"
+    >
+      <div
+        ref={modalRef}
+        className={styles.modal}
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className={styles.header}>
-          <h2>New Document</h2>
-          <button className={styles.closeButton} onClick={onClose}>
+          <h2 id="modal-title">New Document</h2>
+          <button
+            className={styles.closeButton}
+            onClick={onClose}
+            aria-label="Close dialog"
+          >
             <svg
               width="20"
               height="20"
@@ -64,6 +97,7 @@ export function CreateDocumentModal({ onClose }: CreateDocumentModalProps) {
               fill="none"
               stroke="currentColor"
               strokeWidth="2"
+              aria-hidden="true"
             >
               <line x1="18" y1="6" x2="6" y2="18"></line>
               <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -74,19 +108,22 @@ export function CreateDocumentModal({ onClose }: CreateDocumentModalProps) {
         <form onSubmit={handleSubmit}>
           <div className={styles.body}>
             <div className={styles.formGroup}>
-              <label>Document Title</label>
+              <label htmlFor="doc-title">Document Title</label>
               <input
+                id="doc-title"
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="Enter document title..."
                 autoFocus
+                aria-required="true"
               />
             </div>
 
             <div className={styles.formGroup}>
-              <label>Content</label>
+              <label htmlFor="doc-content">Content</label>
               <textarea
+                id="doc-content"
                 value={body}
                 onChange={(e) => setBody(e.target.value)}
                 placeholder="Start writing..."

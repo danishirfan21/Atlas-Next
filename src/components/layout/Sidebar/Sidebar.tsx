@@ -100,12 +100,16 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className={styles.sidebar}>
+    <aside
+      className={styles.sidebar}
+      role="navigation"
+      aria-label="Main navigation"
+    >
       <div className={styles.header}>
         <h1 className={styles.brand}>Atlas</h1>
       </div>
 
-      <nav className={styles.navGroup}>
+      <nav className={styles.navGroup} aria-label="Primary">
         {navigationItems.map((item) => {
           const isActive = pathname === item.path;
           return (
@@ -113,6 +117,7 @@ export function Sidebar() {
               key={item.path}
               href={item.path}
               className={`${styles.navItem} ${isActive ? styles.active : ''}`}
+              aria-current={isActive ? 'page' : undefined}
             >
               {item.icon}
               <span>{item.name}</span>
@@ -122,19 +127,22 @@ export function Sidebar() {
       </nav>
 
       <div className={styles.footer}>
-        {footerItems.map((item) => {
-          const isActive = pathname === item.path;
-          return (
-            <Link
-              key={item.path}
-              href={item.path}
-              className={`${styles.navItem} ${isActive ? styles.active : ''}`}
-            >
-              {item.icon}
-              <span>{item.name}</span>
-            </Link>
-          );
-        })}
+        <nav aria-label="Secondary">
+          {footerItems.map((item) => {
+            const isActive = pathname === item.path;
+            return (
+              <Link
+                key={item.path}
+                href={item.path}
+                className={`${styles.navItem} ${isActive ? styles.active : ''}`}
+                aria-current={isActive ? 'page' : undefined}
+              >
+                {item.icon}
+                <span>{item.name}</span>
+              </Link>
+            );
+          })}
+        </nav>
       </div>
     </aside>
   );
