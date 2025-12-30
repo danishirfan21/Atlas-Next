@@ -1,9 +1,10 @@
 /**
  * Format a date as relative time (e.g., "2 hours ago")
  */
-export function formatRelativeTime(date: Date): string {
+export function formatRelativeTime(date: Date | string): string {
   const now = new Date();
-  const diff = now.getTime() - date.getTime();
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  const diff = now.getTime() - dateObj.getTime();
   const hours = Math.floor(diff / (1000 * 60 * 60));
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
 
@@ -11,7 +12,7 @@ export function formatRelativeTime(date: Date): string {
   if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
   if (days === 1) return '1 day ago';
   if (days < 7) return `${days} days ago`;
-  return date.toLocaleDateString();
+  return dateObj.toLocaleDateString();
 }
 
 /**

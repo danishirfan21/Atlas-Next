@@ -8,5 +8,5 @@ export interface ActivityItem {
   authorInitials: string;
   documentTitle: string;
   documentId: number;
-  timestamp: Date;
+  timestamp: Date | string;
 }
