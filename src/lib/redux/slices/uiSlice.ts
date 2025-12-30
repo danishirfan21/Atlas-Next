@@ -7,9 +7,9 @@ import type {
   SortOption,
 } from '@/types';
 import {
-  loadPersistedState,
   savePersistedState,
 } from '@/lib/utils/persistence';
+import type { PersistedState } from '@/lib/utils/persistence';
 
 /**
  * UI Slice - Manages global UI state
@@ -46,22 +46,19 @@ interface ExtendedUIState extends UIState {
   };
 }
 
-// Load persisted state
-const persistedState = loadPersistedState();
-
 const initialState: ExtendedUIState = {
   currentPage: 'dashboard',
-  sidebarCollapsed: persistedState.sidebarCollapsed ?? false,
+  sidebarCollapsed: false,
   searchQuery: '',
   hasUnsavedChanges: false,
   toasts: [],
-  selectedDocumentId: persistedState.selectedDocumentId ?? null,
-  documentFilters: persistedState.documentFilters ?? {
+  selectedDocumentId: null,
+  documentFilters: {
     status: 'all',
     sort: 'recent',
   },
   isEditingDocument: false,
-  selectedCollectionId: persistedState.selectedCollectionId ?? null,
+  selectedCollectionId: null,
   searchFilters: {
     status: 'all',
     author: 'all',
@@ -72,7 +69,7 @@ const initialState: ExtendedUIState = {
     page: 1,
     limit: 10,
   },
-  viewPreferences: persistedState.viewPreferences ?? {
+  viewPreferences: {
     documentsViewMode: 'list',
     theme: 'light',
   },
@@ -82,6 +79,39 @@ const uiSlice = createSlice({
   name: 'ui',
   initialState,
   reducers: {
+    rehydrateUiState: (
+      state,
+      action: PayloadAction<PersistedState>
+    ) => {
+      const persisted = action.payload;
+
+      if (persisted.sidebarCollapsed !== undefined) {
+        state.sidebarCollapsed = persisted.sidebarCollapsed;
+      }
+
+      if (persisted.selectedDocumentId !== undefined) {
+        state.selectedDocumentId = persisted.selectedDocumentId;
+      }
+
+      if (persisted.selectedCollectionId !== undefined) {
+        state.selectedCollectionId = persisted.selectedCollectionId;
+      }
+
+      if (persisted.documentFilters !== undefined) {
+        state.documentFilters = {
+          ...state.documentFilters,
+          ...persisted.documentFilters,
+        };
+      }
+
+      if (persisted.viewPreferences !== undefined) {
+        state.viewPreferences = {
+          ...state.viewPreferences,
+          ...persisted.viewPreferences,
+        };
+      }
+    },
+
     setCurrentPage: (state, action: PayloadAction<PageType>) => {
       state.currentPage = action.payload;
     },
@@ -211,6 +241,7 @@ const uiSlice = createSlice({
 });
 
 export const {
+  rehydrateUiState,
   setCurrentPage,
   toggleSidebar,
   setSearchQuery,

@@ -7,7 +7,7 @@ import { setSelectedCollectionId, addToast } from '@/lib/redux/slices/uiSlice';
 import { CollectionCard } from '@/components/collections/CollectionCard';
 import { CollectionDetail } from '@/components/collections/CollectionDetail';
 import { CreateCollectionModal } from '@/components/collections/CreateCollectionModal';
-import { Button, ErrorState } from '@/components/ui';
+import { Button, ErrorState, EmptyState } from '@/components/ui';
 import styles from './page.module.css';
 
 export default function CollectionsPage() {

@@ -3,7 +3,7 @@
 import React, { useCallback } from 'react';
 import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
 import { setSelectedDocumentId } from '@/lib/redux/slices/uiSlice';
-import { useGetDocumentQuery } from '@/lib/redux/api/documentsApi';
+import { documentsApi } from '@/lib/redux/api/documentsApi';
 import { Badge, EmptyState } from '@/components/ui';
 import { formatRelativeTime } from '@/lib/utils/helpers';
 import type { Document } from '@/types';
@@ -134,16 +134,11 @@ const DocumentCard = React.memo(
     searchQuery: string;
     onSelect: (id: number) => void;
   }) => {
-    // Prefetch hook - will cache the document when hovered
-    const {} = useGetDocumentQuery(doc.id, {
-      skip: true, // Don't fetch immediately
-    });
+    const prefetchDocument = documentsApi.usePrefetch('getDocument');
 
     const handleMouseEnter = useCallback(() => {
-      // Trigger prefetch by dispatching the query
-      // RTK Query will cache this for instant loading when clicked
-      useGetDocumentQuery(doc.id);
-    }, [doc.id]);
+      prefetchDocument(doc.id, { ifOlderThan: 10 });
+    }, [doc.id, prefetchDocument]);
 
     const handleClick = useCallback(() => {
       onSelect(doc.id);

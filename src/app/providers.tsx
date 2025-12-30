@@ -1,8 +1,10 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Provider } from 'react-redux';
 import { store } from '@/lib/redux/store';
+import { loadPersistedState } from '@/lib/utils/persistence';
+import { rehydrateUiState } from '@/lib/redux/slices/uiSlice';
 
 /**
  * Redux Provider Wrapper
@@ -14,5 +16,10 @@ import { store } from '@/lib/redux/store';
  */
 
 export function Providers({ children }: { children: React.ReactNode }) {
+  useEffect(() => {
+    const persisted = loadPersistedState();
+    store.dispatch(rehydrateUiState(persisted));
+  }, []);
+
   return <Provider store={store}>{children}</Provider>;
 }

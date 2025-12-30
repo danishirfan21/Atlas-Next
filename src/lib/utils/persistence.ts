@@ -5,14 +5,16 @@
  * Automatic JSON serialization/deserialization
  */
 
+import type { FilterOption, SortOption } from '@/types';
+
 const STORAGE_KEY = 'atlas_ui_state';
 
-interface PersistedState {
+export interface PersistedState {
   selectedDocumentId?: number | null;
   selectedCollectionId?: number | null;
   documentFilters?: {
-    status: string;
-    sort: string;
+    status: FilterOption;
+    sort: SortOption;
   };
   sidebarCollapsed?: boolean;
   viewPreferences?: {
