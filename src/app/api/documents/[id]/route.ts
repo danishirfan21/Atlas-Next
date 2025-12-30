@@ -1,21 +1,24 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/mockDb';
 
 export async function GET(
   request: Request,
   { params }: { params: { id: string } }
 ) {
   try {
-    // Simulate random API failures (7.5% chance)
-    if (Math.random() < 0.075) {
-      return NextResponse.json(
-        { error: 'Service temporarily unavailable' },
-        { status: 503 }
-      );
+    const id = parseInt(params.id);
+    const GITHUB_API_BASE = process.env.NEXT_PUBLIC_MOCK_API_BASE;
+
+    // Fetch all documents from GitHub
+    const response = await fetch(`${GITHUB_API_BASE}/documents.json`, {
+      next: { revalidate: 60 }, // Cache for 60 seconds
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch from GitHub');
     }
 
-    const id = parseInt(params.id);
-    const document = db.documents.getById(id);
+    const documents = await response.json();
+    const document = documents.find((d: any) => d.id === id);
 
     if (!document) {
       return NextResponse.json(
@@ -38,25 +41,35 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
-    // Simulate random API failures (7.5% chance)
-    if (Math.random() < 0.075) {
-      return NextResponse.json(
-        { error: 'Failed to update document' },
-        { status: 500 }
-      );
-    }
-
     const id = parseInt(params.id);
     const body = await request.json();
+    const GITHUB_API_BASE = process.env.NEXT_PUBLIC_MOCK_API_BASE;
 
-    const updated = db.documents.update(id, body);
+    // Fetch current document
+    const response = await fetch(`${GITHUB_API_BASE}/documents.json`, {
+      next: { revalidate: 60 },
+    });
 
-    if (!updated) {
+    if (!response.ok) {
+      throw new Error('Failed to fetch from GitHub');
+    }
+
+    const documents = await response.json();
+    const document = documents.find((d: any) => d.id === id);
+
+    if (!document) {
       return NextResponse.json(
         { error: 'Document not found' },
         { status: 404 }
       );
     }
+
+    // Merge changes (optimistic update only)
+    const updated = {
+      ...document,
+      ...body,
+      updatedAt: new Date().toISOString(),
+    };
 
     return NextResponse.json(updated);
   } catch (error) {
@@ -72,16 +85,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const id = parseInt(params.id);
-    const success = db.documents.delete(id);
-
-    if (!success) {
-      return NextResponse.json(
-        { error: 'Document not found' },
-        { status: 404 }
-      );
-    }
-
+    // Mock delete (optimistic update only)
     return NextResponse.json({ success: true });
   } catch (error) {
     return NextResponse.json(

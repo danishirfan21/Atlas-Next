@@ -1,16 +1,7 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/mockDb';
 
 export async function GET(request: Request) {
   try {
-    // Simulate random API failures (7.5% chance)
-    if (Math.random() < 0.075) {
-      return NextResponse.json(
-        { error: 'Service temporarily unavailable' },
-        { status: 503 }
-      );
-    }
-
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
     const sort = searchParams.get('sort');
@@ -18,18 +9,29 @@ export async function GET(request: Request) {
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
 
-    let documents = db.documents.getAll();
+    const GITHUB_API_BASE = process.env.NEXT_PUBLIC_MOCK_API_BASE;
+
+    // Fetch from GitHub
+    const response = await fetch(`${GITHUB_API_BASE}/documents.json`, {
+      next: { revalidate: 60 }, // Cache for 60 seconds
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch from GitHub');
+    }
+
+    let documents = await response.json();
 
     // Filter by status
     if (status && status !== 'all') {
-      documents = documents.filter((doc) => doc.status === status);
+      documents = documents.filter((doc: any) => doc.status === status);
     }
 
     // Filter by search query
     if (q) {
       const query = q.toLowerCase();
       documents = documents.filter(
-        (doc) =>
+        (doc: any) =>
           doc.title.toLowerCase().includes(query) ||
           doc.snippet.toLowerCase().includes(query)
       );
@@ -38,15 +40,15 @@ export async function GET(request: Request) {
     // Sort
     if (sort === 'oldest') {
       documents.sort(
-        (a, b) =>
+        (a: any, b: any) =>
           new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime()
       );
     } else if (sort === 'title') {
-      documents.sort((a, b) => a.title.localeCompare(b.title));
+      documents.sort((a: any, b: any) => a.title.localeCompare(b.title));
     } else {
       // Default: recent
       documents.sort(
-        (a, b) =>
+        (a: any, b: any) =>
           new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
       );
     }
@@ -56,7 +58,7 @@ export async function GET(request: Request) {
     const endIndex = startIndex + limit;
     const paginatedDocs = documents.slice(startIndex, endIndex);
 
-    const response = {
+    const responseData = {
       documents: paginatedDocs,
       pagination: {
         page,
@@ -68,7 +70,7 @@ export async function GET(request: Request) {
       },
     };
 
-    return NextResponse.json(response);
+    return NextResponse.json(responseData);
   } catch (error) {
     return NextResponse.json(
       { error: 'Failed to fetch documents' },
@@ -77,27 +79,22 @@ export async function GET(request: Request) {
   }
 }
 
-// POST remains the same
 export async function POST(request: Request) {
   try {
-    // Simulate random API failures (7.5% chance)
-    if (Math.random() < 0.075) {
-      return NextResponse.json(
-        { error: 'Failed to create document' },
-        { status: 500 }
-      );
-    }
-
     const body = await request.json();
 
-    const newDoc = db.documents.create({
+    // Create temporary document (optimistic update only)
+    const newDoc = {
+      id: Date.now(), // Temporary ID
       title: body.title || 'Untitled Document',
       snippet: body.snippet || body.body?.substring(0, 60) + '...' || '',
       body: body.body || '<p>Start writing...</p>',
       author: body.author || 'DK',
       authorInitials: body.authorInitials || 'DK',
+      updatedAt: new Date().toISOString(),
       status: body.status || 'Draft',
-    });
+      views: 0,
+    };
 
     return NextResponse.json(newDoc, { status: 201 });
   } catch (error) {

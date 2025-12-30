@@ -1,20 +1,25 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/mockDb';
 
 export async function GET(request: Request) {
   try {
-    // Simulate random API failures (7.5% chance)
-    if (Math.random() < 0.075) {
-      return NextResponse.json(
-        { error: 'Service temporarily unavailable' },
-        { status: 503 }
-      );
+    const GITHUB_API_BASE = process.env.NEXT_PUBLIC_MOCK_API_BASE;
+
+    // Fetch from GitHub
+    const response = await fetch(`${GITHUB_API_BASE}/collections.json`, {
+      next: { revalidate: 60 }, // Cache for 60 seconds
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch from GitHub');
     }
 
-    const collections = db.collections.getAll();
+    const collections = await response.json();
 
     // Sort by most recently updated
-    collections.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
+    collections.sort(
+      (a: any, b: any) =>
+        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+    );
 
     return NextResponse.json(collections);
   } catch (error) {
@@ -27,17 +32,11 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    // Simulate random API failures (7.5% chance)
-    if (Math.random() < 0.075) {
-      return NextResponse.json(
-        { error: 'Failed to create collection' },
-        { status: 500 }
-      );
-    }
-
     const body = await request.json();
 
-    const newCollection = db.collections.create({
+    // Create temporary collection (optimistic update only)
+    const newCollection = {
+      id: Date.now(), // Temporary ID
       name: body.name || 'Untitled Collection',
       description: body.description || '',
       icon: body.icon || '📁',
@@ -45,7 +44,9 @@ export async function POST(request: Request) {
         body.iconBg || 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
       documentCount: 0,
       contributorCount: 1,
-    });
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
 
     return NextResponse.json(newCollection, { status: 201 });
   } catch (error) {

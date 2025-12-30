@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/mockDb';
 
 export async function GET(
   request: Request,
@@ -7,7 +6,19 @@ export async function GET(
 ) {
   try {
     const id = parseInt(params.id);
-    const collection = db.collections.getById(id);
+    const GITHUB_API_BASE = process.env.NEXT_PUBLIC_MOCK_API_BASE;
+
+    // Fetch all collections from GitHub
+    const response = await fetch(`${GITHUB_API_BASE}/collections.json`, {
+      next: { revalidate: 60 }, // Cache for 60 seconds
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch from GitHub');
+    }
+
+    const collections = await response.json();
+    const collection = collections.find((c: any) => c.id === id);
 
     if (!collection) {
       return NextResponse.json(
@@ -32,15 +43,33 @@ export async function PATCH(
   try {
     const id = parseInt(params.id);
     const body = await request.json();
+    const GITHUB_API_BASE = process.env.NEXT_PUBLIC_MOCK_API_BASE;
 
-    const updated = db.collections.update(id, body);
+    // Fetch current collection
+    const response = await fetch(`${GITHUB_API_BASE}/collections.json`, {
+      next: { revalidate: 60 },
+    });
 
-    if (!updated) {
+    if (!response.ok) {
+      throw new Error('Failed to fetch from GitHub');
+    }
+
+    const collections = await response.json();
+    const collection = collections.find((c: any) => c.id === id);
+
+    if (!collection) {
       return NextResponse.json(
         { error: 'Collection not found' },
         { status: 404 }
       );
     }
+
+    // Merge changes (optimistic update only)
+    const updated = {
+      ...collection,
+      ...body,
+      updatedAt: new Date().toISOString(),
+    };
 
     return NextResponse.json(updated);
   } catch (error) {
