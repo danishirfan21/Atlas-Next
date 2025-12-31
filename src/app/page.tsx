@@ -169,7 +169,7 @@ export default function DashboardPage() {
         value: `${coveragePercent}%`,
         label: 'Published Coverage',
         change: `${publishedDocs} of ${totalDocs} published`,
-        changeType: coveragePercent >= 80 ? 'positive' : ('neutral' as const),
+        changeType: coveragePercent >= 80 ? ('positive' as const) : ('neutral' as const),
       },
     ];
   }, [documentsData, collections]);
