@@ -18,13 +18,20 @@ export function CollectionDetail() {
       skip: !selectedCollectionId,
     });
 
-  // In a real app, we'd filter documents by collectionId
-  // For now, we'll just show all documents as a placeholder
-  const { data: documents, isLoading: isLoadingDocuments } =
+  // Fetch all documents
+  const { data: documentsData, isLoading: isLoadingDocuments } =
     useGetDocumentsQuery(
-      { status: 'all', sort: 'recent', q: '' },
+      { status: 'all', sort: 'recent', q: '', page: 1, limit: 100 },
       { skip: !selectedCollectionId }
     );
+
+  // Filter documents by collectionId (client-side filtering)
+  const collectionDocuments = React.useMemo(() => {
+    if (!documentsData?.documents) return [];
+    return documentsData.documents.filter(
+      (doc) => (doc as any).collectionId === selectedCollectionId
+    );
+  }, [documentsData, selectedCollectionId]);
 
   if (!selectedCollectionId) {
     return (
@@ -91,8 +98,8 @@ export function CollectionDetail() {
           <div>Loading documents...</div>
         ) : (
           <div className={styles.documentsList}>
-            {documents && documents.documents.length > 0 ? (
-              documents.documents.slice(0, 3).map((doc) => (
+            {collectionDocuments.length > 0 ? (
+              collectionDocuments.map((doc) => (
                 <div key={doc.id} className={styles.documentCard}>
                   <h4>{doc.title}</h4>
                   <p>{doc.snippet}</p>
