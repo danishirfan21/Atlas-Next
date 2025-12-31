@@ -31,9 +31,7 @@ export default function HelpPage() {
           <p className={styles.cardDescription}>
             Comprehensive guides and tutorials for using Atlas
           </p>
-          <a href="#" className={styles.link}>
-            Browse docs →
-          </a>
+          <div className={styles.comingSoon}>Coming Soon</div>
         </Card>
 
         <Card hover>
@@ -55,9 +53,7 @@ export default function HelpPage() {
           <p className={styles.cardDescription}>
             Find answers to commonly asked questions
           </p>
-          <a href="#" className={styles.link}>
-            View FAQs →
-          </a>
+          <div className={styles.comingSoon}>Coming Soon</div>
         </Card>
 
         <Card hover>
@@ -77,9 +73,7 @@ export default function HelpPage() {
           <p className={styles.cardDescription}>
             Get help from our support team
           </p>
-          <a href="#" className={styles.link}>
-            Contact us →
-          </a>
+          <div className={styles.comingSoon}>Coming Soon</div>
         </Card>
 
         <Card hover>
@@ -99,9 +93,7 @@ export default function HelpPage() {
           <p className={styles.cardDescription}>
             Learn keyboard shortcuts to work faster
           </p>
-          <a href="#" className={styles.link}>
-            View shortcuts →
-          </a>
+          <div className={styles.comingSoon}>Coming Soon</div>
         </Card>
 
         <Card hover>
@@ -122,9 +114,7 @@ export default function HelpPage() {
           <p className={styles.cardDescription}>
             Watch step-by-step video guides
           </p>
-          <a href="#" className={styles.link}>
-            Watch videos →
-          </a>
+          <div className={styles.comingSoon}>Coming Soon</div>
         </Card>
 
         <Card hover>
@@ -144,33 +134,68 @@ export default function HelpPage() {
           <p className={styles.cardDescription}>
             See the latest features and updates
           </p>
-          <a href="#" className={styles.link}>
-            View changelog →
-          </a>
+          <div className={styles.comingSoon}>Coming Soon</div>
         </Card>
       </div>
 
-      <Card>
-        <h3 className={styles.sectionTitle}>Popular Articles</h3>
+      <Card className={styles.cardSection}>
+        <h3 className={styles.sectionTitle}>Quick Tips</h3>
         <div className={styles.articles}>
-          <a href="#" className={styles.article}>
-            <h4>Getting Started with Atlas</h4>
-            <p>Learn the basics of creating and organizing documents</p>
-          </a>
-          <a href="#" className={styles.article}>
-            <h4>Collaborating with Your Team</h4>
-            <p>Best practices for team collaboration and document sharing</p>
-          </a>
-          <a href="#" className={styles.article}>
-            <h4>Using Collections Effectively</h4>
+          <div className={styles.article}>
+            <h4>🚀 Getting Started</h4>
             <p>
-              How to organize documents into collections for better discovery
+              Navigate to Documents to create your first document. Use
+              Collections to organize related documents together.
             </p>
-          </a>
-          <a href="#" className={styles.article}>
-            <h4>Advanced Search Tips</h4>
-            <p>Master advanced search features to find documents faster</p>
-          </a>
+          </div>
+          <div className={styles.article}>
+            <h4>⌨️ Keyboard Shortcuts</h4>
+            <p>
+              Press <kbd>⌘K</kbd> to quickly focus search, <kbd>⌘N</kbd> to
+              create a new document, and <kbd>Esc</kbd> to close modals.
+            </p>
+          </div>
+          <div className={styles.article}>
+            <h4>🔍 Search & Filter</h4>
+            <p>
+              Use the search page to find documents by content, filter by
+              status, author, or date range for precise results.
+            </p>
+          </div>
+          <div className={styles.article}>
+            <h4>📊 Stay Organized</h4>
+            <p>
+              Check the Activity feed to track changes, and use the Dashboard to
+              monitor your workspace metrics at a glance.
+            </p>
+          </div>
+        </div>
+      </Card>
+
+      {/* Feature Preview Banner */}
+      <Card>
+        <div className={styles.featureBanner}>
+          <div className={styles.bannerIcon}>
+            <svg
+              width="48"
+              height="48"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+          </div>
+          <div className={styles.bannerContent}>
+            <h3>More Help Resources Coming Soon</h3>
+            <p>
+              We're working on comprehensive documentation, video tutorials, and
+              an interactive help center. In the meantime, explore the app and
+              use the quick tips above to get started.
+            </p>
+          </div>
         </div>
       </Card>
     </div>

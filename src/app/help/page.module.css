@@ -65,6 +65,18 @@
   color: var(--primary-hover);
 }
 
+.comingSoon {
+  display: inline-block;
+  padding: 6px 12px;
+  background: #fef3c7;
+  color: #92400e;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
 .sectionTitle {
   font-size: 18px;
   font-weight: 600;
@@ -78,17 +90,15 @@
   gap: 16px;
 }
 
+.cardSection {
+  margin-bottom: 32px;
+}
+
 .article {
   padding: 16px;
   border-radius: 8px;
   background: #f9fafb;
-  text-decoration: none;
   transition: all 0.2s;
-  display: block;
-}
-
-.article:hover {
-  background: #f3f4f6;
 }
 
 .article h4 {
@@ -101,6 +111,52 @@
 .article p {
   font-size: 13px;
   color: var(--text-muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.article kbd {
+  display: inline-block;
+  padding: 2px 6px;
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-main);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.featureBanner {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  padding: 8px;
+  background: linear-gradient(135deg, #f5f7ff 0%, #e1effe 100%);
+  border-radius: 8px;
+}
+
+.bannerIcon {
+  flex-shrink: 0;
+  color: var(--primary-blue);
+}
+
+.bannerContent {
+  flex: 1;
+}
+
+.bannerContent h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 8px;
+}
+
+.bannerContent p {
+  font-size: 14px;
+  color: var(--text-muted);
+  line-height: 1.6;
   margin: 0;
 }
 
@@ -116,5 +172,14 @@
 
   .grid {
     grid-template-columns: 1fr;
+  }
+
+  .featureBanner {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .bannerIcon {
+    margin: 0 auto;
   }
 }
