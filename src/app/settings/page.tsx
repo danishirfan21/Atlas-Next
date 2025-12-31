@@ -48,18 +48,76 @@ export default function SettingsPage() {
             <p>Choose how documents are displayed in the list</p>
           </div>
           <div className={styles.settingControl}>
-            <Button
-              variant={
-                viewPreferences.documentsViewMode === 'list'
-                  ? 'primary'
-                  : 'secondary'
-              }
-              onClick={() => dispatch(toggleDocumentsViewMode())}
-            >
-              {viewPreferences.documentsViewMode === 'list'
-                ? 'List View'
-                : 'Grid View'}
-            </Button>
+            <div className={styles.toggleGroup}>
+              <button
+                className={`${styles.toggleOption} ${
+                  viewPreferences.documentsViewMode === 'list'
+                    ? styles.toggleOptionActive
+                    : ''
+                }`}
+                onClick={() => {
+                  if (viewPreferences.documentsViewMode !== 'list') {
+                    dispatch(toggleDocumentsViewMode());
+                    dispatch(
+                      addToast({
+                        message: 'Switched to List View',
+                        type: 'success',
+                      })
+                    );
+                  }
+                }}
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <line x1="8" y1="6" x2="21" y2="6"></line>
+                  <line x1="8" y1="12" x2="21" y2="12"></line>
+                  <line x1="8" y1="18" x2="21" y2="18"></line>
+                  <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                  <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                  <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                </svg>
+                List
+              </button>
+              <button
+                className={`${styles.toggleOption} ${
+                  viewPreferences.documentsViewMode === 'grid'
+                    ? styles.toggleOptionActive
+                    : ''
+                }`}
+                onClick={() => {
+                  if (viewPreferences.documentsViewMode !== 'grid') {
+                    dispatch(toggleDocumentsViewMode());
+                    dispatch(
+                      addToast({
+                        message: 'Switched to Grid View',
+                        type: 'success',
+                      })
+                    );
+                  }
+                }}
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <rect x="3" y="3" width="7" height="7"></rect>
+                  <rect x="14" y="3" width="7" height="7"></rect>
+                  <rect x="14" y="14" width="7" height="7"></rect>
+                  <rect x="3" y="14" width="7" height="7"></rect>
+                </svg>
+                Grid
+              </button>
+            </div>
           </div>
         </div>
 
