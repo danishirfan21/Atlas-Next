@@ -9,6 +9,7 @@ import { CollectionDetail } from '@/components/collections/CollectionDetail';
 import { CreateCollectionModal } from '@/components/collections/CreateCollectionModal';
 import { Button, ErrorState, EmptyState } from '@/components/ui';
 import styles from './page.module.css';
+import { useGetDocumentsQuery } from '@/lib/redux/api/documentsApi';
 
 export default function CollectionsPage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -23,6 +24,14 @@ export default function CollectionsPage() {
     error,
     refetch,
   } = useGetCollectionsQuery();
+
+  const { data: allDocumentsData } = useGetDocumentsQuery({
+    status: 'all',
+    sort: 'recent',
+    q: '',
+    page: 1,
+    limit: 100,
+  });
 
   // Auto-select first collection on load if none selected
   useEffect(() => {
@@ -142,14 +151,28 @@ export default function CollectionsPage() {
           </div>
 
           <div className={styles.grid}>
-            {collections.map((collection) => (
-              <CollectionCard
-                key={collection.id}
-                collection={collection}
-                isSelected={collection.id === selectedCollectionId}
-                onClick={() => handleSelectCollection(collection.id)}
-              />
-            ))}
+            {collections.map((collection) => {
+              const collectionDocs =
+                allDocumentsData?.documents.filter(
+                  (doc) => (doc as any).collectionId === collection.id
+                ) || [];
+
+              const actualDocCount = collectionDocs.length;
+              const actualContributorCount = new Set(
+                collectionDocs.map((d) => d.author)
+              ).size;
+
+
+              return (
+                <CollectionCard
+                  key={collection.id}
+                  collection={collection}
+                  isSelected={collection.id === selectedCollectionId}
+                  onClick={() => handleSelectCollection(collection.id)}
+                  actualDocCount={actualDocCount}
+                  actualContributorCount={actualContributorCount}
+                />
+              );})}
           </div>
         </div>
 

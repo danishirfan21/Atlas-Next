@@ -8,12 +8,16 @@ interface CollectionCardProps {
   collection: Collection;
   isSelected: boolean;
   onClick: () => void;
+  actualDocCount?: number;
+  actualContributorCount?: number;
 }
 
 export const CollectionCard = React.memo(function CollectionCard({
   collection,
   isSelected,
   onClick,
+  actualDocCount,
+  actualContributorCount,
 }: CollectionCardProps) {
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -44,8 +48,11 @@ export const CollectionCard = React.memo(function CollectionCard({
       <p className={styles.description}>{collection.description}</p>
 
       <div className={styles.stats}>
-        <span>📄 {collection.documentCount} docs</span>
-        <span>👥 {collection.contributorCount} contributors</span>
+        <span>📄 {actualDocCount ?? collection.documentCount} docs</span>
+        <span>
+          👥 {actualContributorCount ?? collection.contributorCount}{' '}
+          contributors
+        </span>
       </div>
     </div>
   );

@@ -81,8 +81,11 @@ export function CollectionDetail() {
           <h2>{collection.name}</h2>
           <p className={styles.description}>{collection.description}</p>
           <div className={styles.stats}>
-            <span>📄 {collection.documentCount} documents</span>
-            <span>👥 {collection.contributorCount} contributors</span>
+            <span>📄 {collectionDocuments.length} documents</span>
+            <span>
+              👥 {new Set(collectionDocuments.map((doc) => doc.author)).size}{' '}
+              contributors
+            </span>
             <span>
               📅 Updated {new Date(collection.updatedAt).toLocaleDateString()}
             </span>
