@@ -39,6 +39,16 @@ export function CollectionDetail() {
     [collectionDocuments]
   );
 
+  const latestDocumentUpdatedAt = React.useMemo(() => {
+    if (collectionDocuments.length === 0) return null;
+    
+    const latestTime = Math.max(
+      ...collectionDocuments.map(doc => new Date(doc.updatedAt).getTime())
+    );
+    
+    return new Date(latestTime);
+  }, [collectionDocuments]);
+
   if (!selectedCollectionId) {
     return (
       <EmptyState
@@ -95,9 +105,11 @@ export function CollectionDetail() {
               👥 {contributorCount}{' '}
               {contributorCount === 1 ? 'contributor' : 'contributors'}
             </span>
-            <span>
-              📅 Updated {new Date(collection.updatedAt).toLocaleDateString()}
-            </span>
+            {latestDocumentUpdatedAt && (
+              <span>
+                📅 Updated {latestDocumentUpdatedAt.toLocaleDateString()}
+              </span>
+            )}
           </div>
         </div>
       </div>
@@ -105,12 +117,14 @@ export function CollectionDetail() {
       <div className={styles.divider}></div>
 
       <div className={styles.documentsSection}>
-        <h3 className={styles.sectionTitle}>Documents in this collection</h3>
+        {(isLoadingDocuments || documentCount > 0) && (
+          <h3 className={styles.sectionTitle}>Documents in this collection</h3>
+        )}
         {isLoadingDocuments ? (
           <div>Loading documents...</div>
         ) : (
           <div className={styles.documentsList}>
-            {collectionDocuments.length > 0 ? (
+            {documentCount > 0 ? (
               collectionDocuments.map((doc) => (
                 <div key={doc.id} className={styles.documentCard}>
                   <h4>{doc.title}</h4>
