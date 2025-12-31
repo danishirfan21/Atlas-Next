@@ -19,6 +19,10 @@ export const CollectionCard = React.memo(function CollectionCard({
   actualDocCount,
   actualContributorCount,
 }: CollectionCardProps) {
+  const docCount = actualDocCount ?? collection.documentCount;
+  const contributorCount =
+    actualContributorCount ?? collection.contributorCount;
+
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       if (e.key === 'Enter' || e.key === ' ') {
@@ -48,10 +52,12 @@ export const CollectionCard = React.memo(function CollectionCard({
       <p className={styles.description}>{collection.description}</p>
 
       <div className={styles.stats}>
-        <span>📄 {actualDocCount ?? collection.documentCount} docs</span>
         <span>
-          👥 {actualContributorCount ?? collection.contributorCount}{' '}
-          contributors
+          📄 {docCount} {docCount === 1 ? 'doc' : 'docs'}
+        </span>
+        <span>
+          👥 {contributorCount}{' '}
+          {contributorCount === 1 ? 'contributor' : 'contributors'}
         </span>
       </div>
     </div>

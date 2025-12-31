@@ -33,6 +33,12 @@ export function CollectionDetail() {
     );
   }, [documentsData, selectedCollectionId]);
 
+  const documentCount = collectionDocuments.length;
+  const contributorCount = React.useMemo(
+    () => new Set(collectionDocuments.map((doc) => doc.author)).size,
+    [collectionDocuments]
+  );
+
   if (!selectedCollectionId) {
     return (
       <EmptyState
@@ -81,10 +87,13 @@ export function CollectionDetail() {
           <h2>{collection.name}</h2>
           <p className={styles.description}>{collection.description}</p>
           <div className={styles.stats}>
-            <span>📄 {collectionDocuments.length} documents</span>
             <span>
-              👥 {new Set(collectionDocuments.map((doc) => doc.author)).size}{' '}
-              contributors
+              📄 {documentCount}{' '}
+              {documentCount === 1 ? 'document' : 'documents'}
+            </span>
+            <span>
+              👥 {contributorCount}{' '}
+              {contributorCount === 1 ? 'contributor' : 'contributors'}
             </span>
             <span>
               📅 Updated {new Date(collection.updatedAt).toLocaleDateString()}
