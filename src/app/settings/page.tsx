@@ -39,7 +39,7 @@ export default function SettingsPage() {
         <p className={styles.subtitle}>Manage your Atlas preferences</p>
       </div>
 
-      <Card>
+      <Card className={styles.cardSection}>
         <h2 className={styles.sectionTitle}>View Preferences</h2>
 
         <div className={styles.setting}>

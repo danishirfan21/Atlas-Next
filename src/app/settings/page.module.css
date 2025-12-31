@@ -20,6 +20,10 @@
   color: var(--text-muted);
 }
 
+.cardSection {
+  margin-bottom: 24px;
+}
+
 .sectionTitle {
   font-size: 18px;
   font-weight: 600;
