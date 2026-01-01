@@ -5,16 +5,34 @@ import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import {
   setViewPreference,
   toggleDocumentsViewMode,
+  setUserProfile,
   addToast,
 } from '@/lib/redux/slices/uiSlice';
 import { clearPersistedState } from '@/lib/utils/persistence';
-import { Card, Button } from '@/components/ui';
+import { Card, Button, Avatar } from '@/components/ui';
 import styles from './page.module.css';
+
+const AVATAR_OPTIONS = [
+  'DK',
+  'JD',
+  'AM',
+  'SC',
+  'MR',
+  'EW',
+  'RK',
+  'DP',
+  'AB',
+  'CD',
+  'EF',
+  'GH',
+];
 
 export default function SettingsPage() {
   const dispatch = useAppDispatch();
   const viewPreferences = useAppSelector((state) => state.ui.viewPreferences);
+  const userProfile = useAppSelector((state) => state.ui.userProfile);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [showAvatarPicker, setShowAvatarPicker] = useState(false);
 
   const handleClearState = () => {
     clearPersistedState();
@@ -26,10 +44,20 @@ export default function SettingsPage() {
     );
     setShowConfirm(false);
 
-    // Reload page to reset state
     setTimeout(() => {
       window.location.reload();
     }, 1500);
+  };
+
+  const handleAvatarChange = (initials: string) => {
+    dispatch(setUserProfile({ initials }));
+    dispatch(
+      addToast({
+        message: 'Avatar updated successfully',
+        type: 'success',
+      })
+    );
+    setShowAvatarPicker(false);
   };
 
   return (
@@ -38,6 +66,59 @@ export default function SettingsPage() {
         <h1 className={styles.title}>Settings</h1>
         <p className={styles.subtitle}>Manage your Atlas preferences</p>
       </div>
+
+      {/* Profile Section */}
+      <Card className={styles.cardSection}>
+        <h2 className={styles.sectionTitle}>Profile</h2>
+
+        <div className={styles.setting}>
+          <div className={styles.settingInfo}>
+            <h3>Avatar</h3>
+            <p>Choose your profile avatar initials</p>
+          </div>
+          <div className={styles.settingControl}>
+            {!showAvatarPicker ? (
+              <div
+                style={{ display: 'flex', alignItems: 'center', gap: '12px' }}
+              >
+                <Avatar initials={userProfile.initials} size="lg" />
+                <Button
+                  variant="secondary"
+                  onClick={() => setShowAvatarPicker(true)}
+                >
+                  Change Avatar
+                </Button>
+              </div>
+            ) : (
+              <div className={styles.avatarPicker}>
+                <div className={styles.avatarGrid}>
+                  {AVATAR_OPTIONS.map((initials) => (
+                    <button
+                      key={initials}
+                      className={`${styles.avatarOption} ${
+                        userProfile.initials === initials
+                          ? styles.avatarOptionActive
+                          : ''
+                      }`}
+                      onClick={() => handleAvatarChange(initials)}
+                    >
+                      <Avatar initials={initials} size="md" />
+                      <span className={styles.avatarLabel}>{initials}</span>
+                    </button>
+                  ))}
+                </div>
+                <Button
+                  variant="secondary"
+                  onClick={() => setShowAvatarPicker(false)}
+                  style={{ marginTop: '12px' }}
+                >
+                  Cancel
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
+      </Card>
 
       <Card className={styles.cardSection}>
         <h2 className={styles.sectionTitle}>View Preferences</h2>

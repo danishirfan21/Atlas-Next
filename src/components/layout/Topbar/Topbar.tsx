@@ -13,6 +13,7 @@ export function Topbar() {
   const router = useRouter();
 
   const reduxSearchQuery = useAppSelector((state) => state.ui.searchQuery);
+  const userInitials = useAppSelector((state) => state.ui.userProfile.initials);
 
   const [localSearchQuery, setLocalSearchQuery] = useState('');
 
@@ -20,7 +21,6 @@ export function Topbar() {
     if (pathname === '/search') {
       setLocalSearchQuery(reduxSearchQuery);
     } else {
-      // Clear topbar input when not on search page
       setLocalSearchQuery('');
     }
   }, [pathname, reduxSearchQuery]);
@@ -65,6 +65,10 @@ export function Topbar() {
   const handleClear = useCallback(() => {
     setLocalSearchQuery('');
   }, []);
+
+  const handleAvatarClick = useCallback(() => {
+    router.push('/settings');
+  }, [router]);
 
   return (
     <header className={styles.topbar}>
@@ -137,7 +141,22 @@ export function Topbar() {
           + New {pathname === '/collections' ? 'Collection' : 'Document'}
         </Button>
 
-        <Avatar initials="DK" size="sm" />
+        <div
+          onClick={handleAvatarClick}
+          style={{ cursor: 'pointer' }}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              handleAvatarClick();
+            }
+          }}
+          aria-label="Open settings"
+          title="Settings"
+        >
+          <Avatar initials={userInitials} size="sm" />
+        </div>
       </div>
     </header>
   );

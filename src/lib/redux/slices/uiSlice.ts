@@ -6,9 +6,7 @@ import type {
   FilterOption,
   SortOption,
 } from '@/types';
-import {
-  savePersistedState,
-} from '@/lib/utils/persistence';
+import { savePersistedState } from '@/lib/utils/persistence';
 import type { PersistedState } from '@/lib/utils/persistence';
 
 /**
@@ -20,6 +18,10 @@ import type { PersistedState } from '@/lib/utils/persistence';
  * - Predictable state updates via actions
  * - Persisted to localStorage for continuity
  */
+
+interface UserProfile {
+  initials: string;
+}
 
 interface ExtendedUIState extends UIState {
   toasts: Toast[];
@@ -44,6 +46,7 @@ interface ExtendedUIState extends UIState {
     documentsViewMode: 'list' | 'grid';
     theme: 'light' | 'dark';
   };
+  userProfile: UserProfile;
 }
 
 const initialState: ExtendedUIState = {
@@ -73,16 +76,16 @@ const initialState: ExtendedUIState = {
     documentsViewMode: 'list',
     theme: 'light',
   },
+  userProfile: {
+    initials: 'DK',
+  },
 };
 
 const uiSlice = createSlice({
   name: 'ui',
   initialState,
   reducers: {
-    rehydrateUiState: (
-      state,
-      action: PayloadAction<PersistedState>
-    ) => {
+    rehydrateUiState: (state, action: PayloadAction<PersistedState>) => {
       const persisted = action.payload;
 
       if (persisted.sidebarCollapsed !== undefined) {
@@ -110,6 +113,13 @@ const uiSlice = createSlice({
           ...persisted.viewPreferences,
         };
       }
+
+      if (persisted.userProfile !== undefined) {
+        state.userProfile = {
+          ...state.userProfile,
+          ...persisted.userProfile,
+        };
+      }
     },
 
     setCurrentPage: (state, action: PayloadAction<PageType>) => {
@@ -133,7 +143,10 @@ const uiSlice = createSlice({
 
     addToast: (state, action: PayloadAction<Omit<Toast, 'id'>>) => {
       // Use a counter-based ID to avoid hydration issues
-      const id = `toast-${state.toasts.length}-${action.payload.message.slice(0, 10)}`;
+      const id = `toast-${state.toasts.length}-${action.payload.message.slice(
+        0,
+        10
+      )}`;
       state.toasts.push({ ...action.payload, id });
     },
 
@@ -238,6 +251,17 @@ const uiSlice = createSlice({
       // Persist to localStorage
       savePersistedState({ viewPreferences: state.viewPreferences });
     },
+
+    // User profile
+    setUserProfile: (state, action: PayloadAction<Partial<UserProfile>>) => {
+      state.userProfile = {
+        ...state.userProfile,
+        ...action.payload,
+      };
+
+      // Persist to localStorage
+      savePersistedState({ userProfile: state.userProfile });
+    },
   },
 });
 
@@ -259,6 +283,7 @@ export const {
   resetDocumentsPage,
   setViewPreference,
   toggleDocumentsViewMode,
+  setUserProfile,
 } = uiSlice.actions;
 
 export default uiSlice.reducer;

@@ -21,6 +21,9 @@ export interface PersistedState {
     documentsViewMode?: 'list' | 'grid';
     theme?: 'light' | 'dark';
   };
+  userProfile?: {
+    initials?: string;
+  };
 }
 
 /**
