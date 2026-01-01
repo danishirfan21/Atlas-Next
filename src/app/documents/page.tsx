@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { usePathname } from 'next/navigation';
 import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
 import { useGetDocumentsQuery } from '@/lib/redux/api/documentsApi';
 import {
@@ -20,12 +21,21 @@ export default function DocumentsPage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const dispatch = useAppDispatch();
+  const pathname = usePathname();
   const selectedDocumentId = useAppSelector(
     (state) => state.ui.selectedDocumentId
   );
   const filters = useAppSelector((state) => state.ui.documentFilters);
   const searchQuery = useAppSelector((state) => state.ui.searchQuery);
   const pagination = useAppSelector((state) => state.ui.documentsPagination);
+
+  const initialSelectionRef = useRef<number | null | undefined>(undefined);
+
+  const hasInternalSelectionRef = useRef(false);
+
+  if (initialSelectionRef.current === undefined) {
+    initialSelectionRef.current = selectedDocumentId;
+  }
 
   // READ VIEW MODE FROM REDUX
   const viewMode = useAppSelector(
@@ -36,6 +46,18 @@ export default function DocumentsPage() {
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  useEffect(() => {
+    return () => {
+      
+      if (hasInternalSelectionRef.current || !initialSelectionRef.current) {
+        dispatch(setSelectedDocumentId(null));
+      }
+
+      initialSelectionRef.current = undefined;
+      hasInternalSelectionRef.current = false;
+    };
+  }, [dispatch]);
 
   const { data, isLoading, error, refetch } = useGetDocumentsQuery({
     status: filters.status,
@@ -48,22 +70,19 @@ export default function DocumentsPage() {
   const documents = data?.documents || [];
   const paginationInfo = data?.pagination;
 
-  // Restore persisted state on mount
-  useEffect(() => {
-    if (
-      selectedDocumentId &&
-      !documents.find((d) => d.id === selectedDocumentId)
-    ) {
-      // Document exists but not in current filtered view - that's ok
-    }
-  }, [selectedDocumentId, documents]);
-
   // Auto-select first document on load if none selected
   useEffect(() => {
     if (documents && documents.length > 0 && !selectedDocumentId) {
       dispatch(setSelectedDocumentId(documents[0].id));
+      hasInternalSelectionRef.current = true;
     }
   }, [documents, selectedDocumentId, dispatch]);
+
+  useEffect(() => {
+    if (selectedDocumentId !== initialSelectionRef.current) {
+      hasInternalSelectionRef.current = true;
+    }
+  }, [selectedDocumentId]);
 
   // Reset to page 1 when filters change
   useEffect(() => {
@@ -146,7 +165,6 @@ export default function DocumentsPage() {
             />
           ) : (
             <>
-              {/* PASS VIEW MODE TO DOCUMENT LIST */}
               <DocumentList
                 documents={documents}
                 isLoading={isLoading}

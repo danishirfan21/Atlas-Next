@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
 import { useGetCollectionsQuery } from '@/lib/redux/api/collectionsApi';
 import { setSelectedCollectionId, addToast } from '@/lib/redux/slices/uiSlice';
@@ -17,6 +17,14 @@ export default function CollectionsPage() {
   const selectedCollectionId = useAppSelector(
     (state) => state.ui.selectedCollectionId
   );
+
+  const initialSelectionRef = useRef<number | null | undefined>(undefined);
+
+  const hasInternalSelectionRef = useRef(false);
+
+  if (initialSelectionRef.current === undefined) {
+    initialSelectionRef.current = selectedCollectionId;
+  }
 
   const {
     data: collections,
@@ -37,8 +45,27 @@ export default function CollectionsPage() {
   useEffect(() => {
     if (collections && collections.length > 0 && !selectedCollectionId) {
       dispatch(setSelectedCollectionId(collections[0].id));
+      hasInternalSelectionRef.current = true;
     }
   }, [collections, selectedCollectionId, dispatch]);
+
+  useEffect(() => {
+    if (selectedCollectionId !== initialSelectionRef.current) {
+      hasInternalSelectionRef.current = true;
+    }
+  }, [selectedCollectionId]);
+
+  useEffect(() => {
+    return () => {
+      
+      if (hasInternalSelectionRef.current || !initialSelectionRef.current) {
+        dispatch(setSelectedCollectionId(null));
+      }
+
+      initialSelectionRef.current = undefined;
+      hasInternalSelectionRef.current = false;
+    };
+  }, [dispatch]);
 
   // Listen for Topbar new collection event
   useEffect(() => {
@@ -162,7 +189,6 @@ export default function CollectionsPage() {
                 collectionDocs.map((d) => d.author)
               ).size;
 
-
               return (
                 <CollectionCard
                   key={collection.id}
@@ -172,7 +198,8 @@ export default function CollectionsPage() {
                   actualDocCount={actualDocCount}
                   actualContributorCount={actualContributorCount}
                 />
-              );})}
+              );
+            })}
           </div>
         </div>
 
