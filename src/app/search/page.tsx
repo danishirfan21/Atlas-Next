@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
 import { setSearchQuery, addToast } from '@/lib/redux/slices/uiSlice';
-import { useSearchDocumentsQuery } from '@/lib/redux/api/searchApi';
+import { useSearchDocumentsAndCollectionsQuery } from '@/lib/redux/api/searchApi';
 import { SearchFilters } from '@/components/search/SearchFilters';
 import { SearchResults } from '@/components/search/SearchResults';
 import { ErrorState } from '@/components/ui';
@@ -85,7 +85,7 @@ export default function SearchPage() {
     isLoading,
     error,
     refetch,
-  } = useSearchDocumentsQuery(
+  } = useSearchDocumentsAndCollectionsQuery(
     {
       q: urlQuery,
       status: filters.status,
@@ -106,6 +106,13 @@ export default function SearchPage() {
       );
     }
   }, [error, dispatch]);
+
+  // Default results structure
+  const defaultResults = {
+    documents: [],
+    collections: [],
+    totalResults: 0,
+  };
 
   return (
     <div className={styles.container}>
@@ -132,7 +139,7 @@ export default function SearchPage() {
         <input
           type="text"
           className={styles.searchInput}
-          placeholder="Search documents..."
+          placeholder="Search documents and collections..."
           value={localQuery}
           onChange={handleSearchChange}
           disabled={isLoading}
@@ -167,7 +174,7 @@ export default function SearchPage() {
         <ErrorState message="Search failed" onRetry={() => refetch()} />
       ) : (
         <SearchResults
-          results={results || []}
+          results={results || defaultResults}
           isLoading={isLoading}
           searchQuery={urlQuery}
         />

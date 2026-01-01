@@ -1,7 +1,7 @@
 .results {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 24px;
 }
 
 .resultCount {
@@ -17,6 +17,97 @@
   font-weight: 600;
 }
 
+.breakdown {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+/* Section Styles */
+.section {
+  margin-bottom: 32px;
+}
+
+.sectionTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+/* Collection Grid */
+.collectionGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.collectionCard {
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  gap: 16px;
+}
+
+.collectionCard:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+  border-color: var(--primary-blue);
+}
+
+.collectionIcon {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  flex-shrink: 0;
+}
+
+.collectionContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.collectionTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.collectionDescription {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-bottom: 10px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.collectionMeta {
+  display: flex;
+  gap: 8px;
+  font-size: 12px;
+  color: #9ca3af;
+  align-items: center;
+}
+
+/* Document Result Card */
 .resultCard {
   padding: 20px;
   background: white;
@@ -24,6 +115,7 @@
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.2s;
+  margin-bottom: 16px;
 }
 
 .resultCard:hover {
@@ -108,5 +200,25 @@
   }
   100% {
     background-position: -200% 0;
+  }
+}
+
+/* Responsive */
+@media (max-width: 767px) {
+  .collectionGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .collectionCard {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .collectionIcon {
+    margin: 0 auto;
+  }
+
+  .collectionMeta {
+    justify-content: center;
   }
 }
