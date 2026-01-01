@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
 import { setSelectedDocumentId } from '@/lib/redux/slices/uiSlice';
 import { documentsApi } from '@/lib/redux/api/documentsApi';
@@ -13,12 +13,14 @@ interface DocumentListProps {
   documents: Document[];
   isLoading: boolean;
   onNewDocument: () => void;
+  viewMode: 'list' | 'grid';
 }
 
 export function DocumentList({
   documents,
   isLoading,
   onNewDocument,
+  viewMode,
 }: DocumentListProps) {
   const dispatch = useAppDispatch();
   const selectedDocumentId = useAppSelector(
@@ -26,19 +28,19 @@ export function DocumentList({
   );
   const searchQuery = useAppSelector((state) => state.ui.searchQuery);
 
+  // FIX HYDRATION: Wait for mount before applying grid class
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   const handleSelectDocument = useCallback(
     (id: number) => {
       dispatch(setSelectedDocumentId(id));
     },
     [dispatch]
   );
-
-  // Prefetch document on hover for instant loading
-  const handleDocumentHover = useCallback((id: number) => {
-    // Trigger prefetch by calling the query hook (it will cache the result)
-    // We don't use the result here, just trigger the fetch
-    // This is a pattern - we'll add the actual prefetch in the DocumentCard component
-  }, []);
 
   const highlightText = (text: string, query: string) => {
     if (!query) return text;
@@ -106,8 +108,14 @@ export function DocumentList({
     );
   }
 
+  // HYDRATION FIX: Apply grid class only after mount
+  const containerClassName =
+    isMounted && viewMode === 'grid'
+      ? `${styles.scrollable} ${styles.gridView}`
+      : styles.scrollable;
+
   return (
-    <div className={styles.scrollable}>
+    <div className={containerClassName}>
       {documents.map((doc) => (
         <DocumentCard
           key={doc.id}
@@ -115,24 +123,27 @@ export function DocumentList({
           isSelected={doc.id === selectedDocumentId}
           searchQuery={searchQuery}
           onSelect={handleSelectDocument}
+          viewMode={isMounted ? viewMode : 'list'} // Always list until mounted
         />
       ))}
     </div>
   );
 }
 
-// Memoized document card component to prevent unnecessary re-renders
+// Memoized document card component
 const DocumentCard = React.memo(
   ({
     doc,
     isSelected,
     searchQuery,
     onSelect,
+    viewMode,
   }: {
     doc: Document;
     isSelected: boolean;
     searchQuery: string;
     onSelect: (id: number) => void;
+    viewMode: 'list' | 'grid';
   }) => {
     const prefetchDocument = documentsApi.usePrefetch('getDocument');
 
@@ -160,9 +171,17 @@ const DocumentCard = React.memo(
       return text.replace(regex, '<mark>$1</mark>');
     };
 
+    // HYDRATION FIX: Build className conditionally based on viewMode
+    const cardClassName =
+      viewMode === 'grid'
+        ? `${styles.docCard} ${styles.gridCard} ${
+            isSelected ? styles.selected : ''
+          }`
+        : `${styles.docCard} ${isSelected ? styles.selected : ''}`;
+
     return (
       <div
-        className={`${styles.docCard} ${isSelected ? styles.selected : ''}`}
+        className={cardClassName}
         onClick={handleClick}
         onMouseEnter={handleMouseEnter}
         role="button"

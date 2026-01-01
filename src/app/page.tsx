@@ -70,9 +70,11 @@ export default function DashboardPage() {
       totalDocs > 0 ? Math.round((publishedDocs / totalDocs) * 100) : 0;
 
     // Calculate growth (mock for now - would need historical data)
+    // Use a fixed timestamp for SSR compatibility
+    const now = typeof window !== 'undefined' ? Date.now() : new Date('2026-01-01').getTime();
     const recentDocs = documents.filter((d) => {
       const daysSinceUpdate =
-        (Date.now() - new Date(d.updatedAt).getTime()) / (1000 * 60 * 60 * 24);
+        (now - new Date(d.updatedAt).getTime()) / (1000 * 60 * 60 * 24);
       return daysSinceUpdate <= 30;
     }).length;
     const growthPercent =

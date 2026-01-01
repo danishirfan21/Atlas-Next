@@ -18,6 +18,7 @@ import styles from './page.module.css';
 
 export default function DocumentsPage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const dispatch = useAppDispatch();
   const selectedDocumentId = useAppSelector(
     (state) => state.ui.selectedDocumentId
@@ -25,6 +26,16 @@ export default function DocumentsPage() {
   const filters = useAppSelector((state) => state.ui.documentFilters);
   const searchQuery = useAppSelector((state) => state.ui.searchQuery);
   const pagination = useAppSelector((state) => state.ui.documentsPagination);
+
+  // READ VIEW MODE FROM REDUX
+  const viewMode = useAppSelector(
+    (state) => state.ui.viewPreferences.documentsViewMode
+  );
+
+  // Fix hydration: wait for mount before rendering persisted state
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const { data, isLoading, error, refetch } = useGetDocumentsQuery({
     status: filters.status,
@@ -39,8 +50,6 @@ export default function DocumentsPage() {
 
   // Restore persisted state on mount
   useEffect(() => {
-    // If we have a persisted document ID but it's not in the current list,
-    // keep it selected (it will load when user navigates)
     if (
       selectedDocumentId &&
       !documents.find((d) => d.id === selectedDocumentId)
@@ -137,10 +146,12 @@ export default function DocumentsPage() {
             />
           ) : (
             <>
+              {/* PASS VIEW MODE TO DOCUMENT LIST */}
               <DocumentList
                 documents={documents}
                 isLoading={isLoading}
                 onNewDocument={() => setShowCreateModal(true)}
+                viewMode={isMounted ? viewMode : 'list'}
               />
 
               {paginationInfo && !isLoading && (

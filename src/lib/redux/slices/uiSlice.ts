@@ -132,7 +132,8 @@ const uiSlice = createSlice({
     },
 
     addToast: (state, action: PayloadAction<Omit<Toast, 'id'>>) => {
-      const id = `toast-${Date.now()}-${Math.random()}`;
+      // Use a counter-based ID to avoid hydration issues
+      const id = `toast-${state.toasts.length}-${action.payload.message.slice(0, 10)}`;
       state.toasts.push({ ...action.payload, id });
     },
 

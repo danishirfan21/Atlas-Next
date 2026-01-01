@@ -31,6 +31,13 @@ export function DocumentPreview() {
     (state) => state.ui.hasUnsavedChanges
   );
 
+  // Fix hydration: wait for client-side mount before rendering content
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   const { data: document, isLoading } = useGetDocumentQuery(
     selectedDocumentId!,
     {
@@ -126,6 +133,21 @@ export function DocumentPreview() {
     if (!document) return null;
     return <div dangerouslySetInnerHTML={{ __html: document.body }} />;
   }, [document?.body]);
+
+  // Show loading skeleton during SSR and initial hydration
+  if (!isMounted) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.skeleton}>
+          <div className={styles.skeletonTitle}></div>
+          <div className={styles.skeletonMeta}></div>
+          <div className={styles.skeletonBody}></div>
+          <div className={styles.skeletonBody}></div>
+          <div className={styles.skeletonBody}></div>
+        </div>
+      </div>
+    );
+  }
 
   if (!selectedDocumentId) {
     return (

@@ -1,9 +1,20 @@
 /**
  * Format a date as relative time (e.g., "2 hours ago")
+ * Returns a static formatted date during SSR to prevent hydration issues
  */
-export function formatRelativeTime(date: Date | string): string {
-  const now = new Date();
+export function formatRelativeTime(date: Date | string, nowOverride?: Date): string {
   const dateObj = typeof date === 'string' ? new Date(date) : date;
+  
+  // During SSR, return ISO date string to prevent hydration mismatch
+  if (typeof window === 'undefined' && !nowOverride) {
+    return dateObj.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric', 
+      year: 'numeric' 
+    });
+  }
+  
+  const now = nowOverride || new Date();
   const diff = now.getTime() - dateObj.getTime();
   const hours = Math.floor(diff / (1000 * 60 * 60));
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
@@ -12,7 +23,11 @@ export function formatRelativeTime(date: Date | string): string {
   if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
   if (days === 1) return '1 day ago';
   if (days < 7) return `${days} days ago`;
-  return dateObj.toLocaleDateString();
+  return dateObj.toLocaleDateString('en-US', { 
+    month: 'short', 
+    day: 'numeric', 
+    year: 'numeric' 
+  });
 }
 
 /**
