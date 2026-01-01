@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import {
   setViewPreference,
@@ -33,6 +33,13 @@ export default function SettingsPage() {
   const userProfile = useAppSelector((state) => state.ui.userProfile);
   const [showConfirm, setShowConfirm] = useState(false);
 
+  // FIX HYDRATION: Wait for client-side mount before rendering persisted state
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   const handleClearState = () => {
     clearPersistedState();
     dispatch(
@@ -57,6 +64,115 @@ export default function SettingsPage() {
       })
     );
   };
+
+  // Show loading skeleton during SSR and initial hydration
+  if (!isMounted) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.header}>
+          <h1 className={styles.title}>Settings</h1>
+          <p className={styles.subtitle}>Manage your Atlas preferences</p>
+        </div>
+
+        <Card className={styles.cardSection}>
+          <h2 className={styles.sectionTitle}>Profile</h2>
+          <div className={styles.setting}>
+            <div className={styles.settingInfo}>
+              <h3>Avatar</h3>
+              <p>Choose your profile avatar initials</p>
+            </div>
+          </div>
+          <div className={styles.avatarSection}>
+            <div className={styles.avatarPreview}>
+              <div
+                style={{
+                  width: '48px',
+                  height: '48px',
+                  borderRadius: '50%',
+                  background: '#e5e7eb',
+                  animation: 'pulse 1.5s ease-in-out infinite',
+                }}
+              ></div>
+              <span className={styles.avatarPreviewLabel}>Current Avatar</span>
+            </div>
+            <div className={styles.avatarGrid}>
+              {AVATAR_OPTIONS.map((initials) => (
+                <div
+                  key={initials}
+                  style={{
+                    opacity: 0.5,
+                    pointerEvents: 'none',
+                  }}
+                  className={styles.avatarOption}
+                >
+                  <div
+                    style={{
+                      width: '40px',
+                      height: '40px',
+                      borderRadius: '50%',
+                      background: '#e5e7eb',
+                    }}
+                  ></div>
+                  <span className={styles.avatarLabel}>{initials}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </Card>
+
+        <Card className={styles.cardSection}>
+          <h2 className={styles.sectionTitle}>View Preferences</h2>
+          <div className={styles.setting}>
+            <div className={styles.settingInfo}>
+              <h3>Documents View Mode</h3>
+              <p>Choose how documents are displayed in the list</p>
+            </div>
+            <div className={styles.settingControl}>
+              <div
+                className={styles.toggleGroup}
+                style={{ opacity: 0.5, pointerEvents: 'none' }}
+              >
+                <button className={styles.toggleOption}>
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <line x1="8" y1="6" x2="21" y2="6"></line>
+                    <line x1="8" y1="12" x2="21" y2="12"></line>
+                    <line x1="8" y1="18" x2="21" y2="18"></line>
+                    <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                    <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                    <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                  </svg>
+                  List
+                </button>
+                <button className={styles.toggleOption}>
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <rect x="3" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="14" width="7" height="7"></rect>
+                    <rect x="3" y="14" width="7" height="7"></rect>
+                  </svg>
+                  Grid
+                </button>
+              </div>
+            </div>
+          </div>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.container}>
