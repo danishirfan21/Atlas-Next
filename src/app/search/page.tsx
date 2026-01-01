@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
 import { setSearchQuery, addToast } from '@/lib/redux/slices/uiSlice';
 import { useSearchDocumentsQuery } from '@/lib/redux/api/searchApi';
@@ -13,53 +13,68 @@ import styles from './page.module.css';
 
 export default function SearchPage() {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const dispatch = useAppDispatch();
 
-  // Get search query from URL or Redux
   const urlQuery = searchParams.get('q') || '';
-  const reduxQuery = useAppSelector((state) => state.ui.searchQuery);
   const filters = useAppSelector((state) => state.ui.searchFilters);
 
-  const [localQuery, setLocalQuery] = useState(urlQuery || reduxQuery);
+  const [localQuery, setLocalQuery] = useState(urlQuery);
 
-  // Memoized debounced search - updates Redux & URL
-  const debouncedSearch = useMemo(
+  useEffect(() => {
+    const currentUrlQuery = searchParams.get('q') || '';
+    setLocalQuery(currentUrlQuery);
+    dispatch(setSearchQuery(currentUrlQuery));
+  }, [searchParams, dispatch]);
+
+  useEffect(() => {
+    return () => {
+      // Clear Redux search query when leaving search page
+      dispatch(setSearchQuery(''));
+    };
+  }, [dispatch]);
+
+  const debouncedUrlUpdate = useMemo(
     () =>
       debounce((query: string) => {
-        dispatch(setSearchQuery(query));
-
-        // Update URL
         const params = new URLSearchParams(searchParams.toString());
-        if (query) {
+        if (query.trim()) {
           params.set('q', query);
         } else {
           params.delete('q');
         }
         router.replace(`/search?${params.toString()}`, { scroll: false });
       }, 300),
-    [dispatch, router, searchParams]
+    [router, searchParams]
   );
 
-  // Optimized input change handler
   const handleSearchChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value;
       setLocalQuery(value);
-      debouncedSearch(value);
+      debouncedUrlUpdate(value);
     },
-    [debouncedSearch]
+    [debouncedUrlUpdate]
   );
 
-  // Sync URL query to local state on mount
-  useEffect(() => {
-    if (urlQuery) {
-      setLocalQuery(urlQuery);
-      dispatch(setSearchQuery(urlQuery));
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Immediate URL update on submit
+    const params = new URLSearchParams();
+    if (localQuery.trim()) {
+      params.set('q', localQuery.trim());
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    router.push(`/search?${params.toString()}`);
+  };
 
-  // RTK Query - automatically deduplicates requests
+  const shouldSkip =
+    !urlQuery.trim() &&
+    filters.status === 'all' &&
+    filters.author === 'all' &&
+    !filters.dateFrom &&
+    !filters.dateTo;
+
   const {
     data: results,
     isLoading,
@@ -67,18 +82,15 @@ export default function SearchPage() {
     refetch,
   } = useSearchDocumentsQuery(
     {
-      q: reduxQuery,
+      q: urlQuery,
       status: filters.status,
       author: filters.author,
       dateFrom: filters.dateFrom,
       dateTo: filters.dateTo,
     },
-    {
-      skip: !reduxQuery && filters.status === 'all' && filters.author === 'all',
-    }
+    { skip: shouldSkip }
   );
 
-  // Show error toast
   useEffect(() => {
     if (error) {
       dispatch(
@@ -99,7 +111,7 @@ export default function SearchPage() {
         </p>
       </div>
 
-      <div className={styles.searchBar}>
+      <form onSubmit={handleSearchSubmit} className={styles.searchBar}>
         <svg
           className={styles.searchIcon}
           width="20"
@@ -121,7 +133,7 @@ export default function SearchPage() {
           disabled={isLoading}
           autoFocus
         />
-      </div>
+      </form>
 
       <SearchFilters />
 
@@ -131,7 +143,7 @@ export default function SearchPage() {
         <SearchResults
           results={results || []}
           isLoading={isLoading}
-          searchQuery={reduxQuery}
+          searchQuery={urlQuery}
         />
       )}
     </div>
