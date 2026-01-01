@@ -32,7 +32,6 @@ export default function SettingsPage() {
   const viewPreferences = useAppSelector((state) => state.ui.viewPreferences);
   const userProfile = useAppSelector((state) => state.ui.userProfile);
   const [showConfirm, setShowConfirm] = useState(false);
-  const [showAvatarPicker, setShowAvatarPicker] = useState(false);
 
   const handleClearState = () => {
     clearPersistedState();
@@ -53,11 +52,10 @@ export default function SettingsPage() {
     dispatch(setUserProfile({ initials }));
     dispatch(
       addToast({
-        message: 'Avatar updated successfully',
+        message: 'Avatar updated',
         type: 'success',
       })
     );
-    setShowAvatarPicker(false);
   };
 
   return (
@@ -76,46 +74,32 @@ export default function SettingsPage() {
             <h3>Avatar</h3>
             <p>Choose your profile avatar initials</p>
           </div>
-          <div className={styles.settingControl}>
-            {!showAvatarPicker ? (
-              <div
-                style={{ display: 'flex', alignItems: 'center', gap: '12px' }}
+        </div>
+
+        {/* IMPROVED: Always-visible avatar grid with inline preview */}
+        <div className={styles.avatarSection}>
+          {/* Large preview - updates instantly */}
+          <div className={styles.avatarPreview}>
+            <Avatar initials={userProfile.initials} size="lg" />
+            <span className={styles.avatarPreviewLabel}>Current Avatar</span>
+          </div>
+
+          {/* Always-visible grid - no toggle needed */}
+          <div className={styles.avatarGrid}>
+            {AVATAR_OPTIONS.map((initials) => (
+              <button
+                key={initials}
+                className={`${styles.avatarOption} ${
+                  userProfile.initials === initials
+                    ? styles.avatarOptionActive
+                    : ''
+                }`}
+                onClick={() => handleAvatarChange(initials)}
               >
-                <Avatar initials={userProfile.initials} size="lg" />
-                <Button
-                  variant="secondary"
-                  onClick={() => setShowAvatarPicker(true)}
-                >
-                  Change Avatar
-                </Button>
-              </div>
-            ) : (
-              <div className={styles.avatarPicker}>
-                <div className={styles.avatarGrid}>
-                  {AVATAR_OPTIONS.map((initials) => (
-                    <button
-                      key={initials}
-                      className={`${styles.avatarOption} ${
-                        userProfile.initials === initials
-                          ? styles.avatarOptionActive
-                          : ''
-                      }`}
-                      onClick={() => handleAvatarChange(initials)}
-                    >
-                      <Avatar initials={initials} size="md" />
-                      <span className={styles.avatarLabel}>{initials}</span>
-                    </button>
-                  ))}
-                </div>
-                <Button
-                  variant="secondary"
-                  onClick={() => setShowAvatarPicker(false)}
-                  style={{ marginTop: '12px' }}
-                >
-                  Cancel
-                </Button>
-              </div>
-            )}
+                <Avatar initials={initials} size="md" />
+                <span className={styles.avatarLabel}>{initials}</span>
+              </button>
+            ))}
           </div>
         </div>
       </Card>
