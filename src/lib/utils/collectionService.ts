@@ -4,10 +4,34 @@
  * When creating/updating collections, also create corresponding activities
  */
 
-import type { Collection } from '@/types';
-import { createActivity } from './activityService';
+import type { Collection, ActivityItem } from '@/types';
 
 const STORAGE_KEY = 'atlas_local_collections';
+const ACTIVITY_STORAGE_KEY = 'atlas_local_activities';
+
+// ============================================
+// HELPER: Activity Storage
+// ============================================
+
+function getLocalActivities(): ActivityItem[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const stored = localStorage.getItem(ACTIVITY_STORAGE_KEY);
+    return stored ? JSON.parse(stored) : [];
+  } catch (error) {
+    console.error('Failed to load activities:', error);
+    return [];
+  }
+}
+
+function saveLocalActivities(activities: ActivityItem[]): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(ACTIVITY_STORAGE_KEY, JSON.stringify(activities));
+  } catch (error) {
+    console.error('Failed to save activities:', error);
+  }
+}
 
 // ============================================
 // STORAGE HELPERS
@@ -125,16 +149,19 @@ export function createLocalCollection(data: Partial<Collection>): Collection {
   localCollections.push(newCollection);
   saveLocalCollections(localCollections);
 
-  // 🎯 CREATE ACTIVITY
-  // Create a dummy document ID for collection creation activity
-  // We'll use the collection ID as the documentId for now
-  createActivity(
-    'created',
-    newCollection.id,
-    `Collection: ${newCollection.name}`,
-    'DK',
-    'DK'
-  );
+  // 🎯 CREATE ACTIVITY for collection
+  const activities = getLocalActivities();
+  const newActivity: ActivityItem = {
+    id: Date.now() + 1, // Ensure unique ID
+    action: 'created',
+    author: 'DK',
+    authorInitials: 'DK',
+    documentTitle: `Collection: ${newCollection.name}`,
+    collectionId: newCollection.id,
+    timestamp: new Date().toISOString(),
+  };
+  activities.push(newActivity);
+  saveLocalActivities(activities);
 
   console.log(
     '✨ Created local collection:',
@@ -175,14 +202,19 @@ export function updateLocalCollection(
     localCollections.push(updatedCollection);
     saveLocalCollections(localCollections);
 
-    // 🎯 CREATE ACTIVITY (updated, not created)
-    createActivity(
-      'updated',
-      updatedCollection.id,
-      `Collection: ${updatedCollection.name}`,
-      'DK',
-      'DK'
-    );
+    // 🎯 CREATE ACTIVITY for collection update
+    const activities = getLocalActivities();
+    const newActivity: ActivityItem = {
+      id: Date.now() + 1,
+      action: 'updated',
+      author: 'DK',
+      authorInitials: 'DK',
+      documentTitle: `Collection: ${updatedCollection.name}`,
+      collectionId: updatedCollection.id,
+      timestamp: new Date().toISOString(),
+    };
+    activities.push(newActivity);
+    saveLocalActivities(activities);
 
     console.log('📝 Created and updated local collection:', id);
     return updatedCollection;
@@ -199,14 +231,19 @@ export function updateLocalCollection(
   localCollections[index] = updatedCollection;
   saveLocalCollections(localCollections);
 
-  // 🎯 CREATE ACTIVITY
-  createActivity(
-    'updated',
-    updatedCollection.id,
-    `Collection: ${updatedCollection.name}`,
-    'DK',
-    'DK'
-  );
+  // 🎯 CREATE ACTIVITY for collection update
+  const activities = getLocalActivities();
+  const newActivity: ActivityItem = {
+    id: Date.now() + 1,
+    action: 'updated',
+    author: 'DK',
+    authorInitials: 'DK',
+    documentTitle: `Collection: ${updatedCollection.name}`,
+    collectionId: updatedCollection.id,
+    timestamp: new Date().toISOString(),
+  };
+  activities.push(newActivity);
+  saveLocalActivities(activities);
 
   console.log('📝 Updated local collection:', id, updatedCollection.name);
 

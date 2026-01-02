@@ -65,9 +65,16 @@ export function ActivityTimeline({
     <div className={styles.timeline}>
       {activities.map((activity) => {
         const config = ACTION_CONFIG[activity.action];
+        const isCollectionActivity = !!activity.collectionId;
 
         return (
-          <div key={activity.id} className={styles.item}>
+          <div
+            key={activity.id}
+            className={styles.item}
+            style={{
+              cursor: isCollectionActivity ? 'default' : 'pointer',
+            }}
+          >
             <div className={styles.avatarContainer}>
               <Avatar initials={activity.authorInitials} size="md" />
               <div

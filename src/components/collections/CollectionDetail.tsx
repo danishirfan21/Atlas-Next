@@ -29,7 +29,7 @@ export function CollectionDetail() {
   const collectionDocuments = React.useMemo(() => {
     if (!documentsData?.documents) return [];
     return documentsData.documents.filter(
-      (doc) => (doc as any).collectionId === selectedCollectionId
+      (doc) => doc.collectionId === selectedCollectionId
     );
   }, [documentsData, selectedCollectionId]);
 
@@ -41,11 +41,11 @@ export function CollectionDetail() {
 
   const latestDocumentUpdatedAt = React.useMemo(() => {
     if (collectionDocuments.length === 0) return null;
-    
+
     const latestTime = Math.max(
-      ...collectionDocuments.map(doc => new Date(doc.updatedAt).getTime())
+      ...collectionDocuments.map((doc) => new Date(doc.updatedAt).getTime())
     );
-    
+
     return new Date(latestTime);
   }, [collectionDocuments]);
 
@@ -152,7 +152,7 @@ export function CollectionDetail() {
                   </svg>
                 }
                 title="No documents yet"
-                description="This collection doesn't have any documents yet. Add documents to get started."
+                description="This collection doesn't have any documents yet. Create a new document and assign it to this collection to get started."
               />
             )}
           </div>

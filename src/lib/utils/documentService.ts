@@ -120,6 +120,7 @@ export function createLocalDocument(data: Partial<Document>): Document {
     updatedAt: now,
     status: data.status || 'Draft',
     views: 0,
+    collectionId: data.collectionId,
   };
 
   localDocs.push(newDoc);
@@ -162,6 +163,7 @@ export function updateLocalDocument(
       createdAt: updates.createdAt || now,
       status: updates.status || 'Draft',
       views: updates.views || 0,
+      collectionId: updates.collectionId,
       ...updates,
       updatedAt: now,
     };

@@ -10,6 +10,7 @@ export interface Document {
   updatedAt: string; // ISO string for API compatibility
   status: 'Published' | 'Draft' | 'In Review';
   views: number;
+  collectionId?: number;
 }
 
 export type DocumentStatus = 'Published' | 'Draft' | 'In Review';

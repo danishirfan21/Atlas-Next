@@ -7,6 +7,7 @@ export interface ActivityItem {
   author: string;
   authorInitials: string;
   documentTitle: string;
-  documentId: number;
+  documentId?: number;
+  collectionId?: number;
   timestamp: Date | string;
 }

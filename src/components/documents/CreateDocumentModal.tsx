@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useCreateDocumentMutation } from '@/lib/redux/api/documentsApi';
+import { useGetCollectionsQuery } from '@/lib/redux/api/collectionsApi';
 import { useAppDispatch } from '@/lib/redux/hooks';
 import { setSelectedDocumentId, addToast } from '@/lib/redux/slices/uiSlice';
 import { Button } from '@/components/ui/Button/Button';
@@ -15,8 +16,14 @@ interface CreateDocumentModalProps {
 export function CreateDocumentModal({ onClose }: CreateDocumentModalProps) {
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
+  const [selectedCollectionId, setSelectedCollectionId] = useState<
+    number | null
+  >(null);
   const [createDocument, { isLoading }] = useCreateDocumentMutation();
   const dispatch = useAppDispatch();
+
+  // Fetch collections for dropdown
+  const { data: collections } = useGetCollectionsQuery();
 
   // Focus trap
   const modalRef = useFocusTrap<HTMLDivElement>(true);
@@ -51,6 +58,7 @@ export function CreateDocumentModal({ onClose }: CreateDocumentModalProps) {
         author: 'DK',
         authorInitials: 'DK',
         status: 'Draft',
+        collectionId: selectedCollectionId || undefined,
       }).unwrap();
 
       dispatch(setSelectedDocumentId(newDoc.id));
@@ -118,6 +126,27 @@ export function CreateDocumentModal({ onClose }: CreateDocumentModalProps) {
                 autoFocus
                 aria-required="true"
               />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label htmlFor="doc-collection">Collection (Optional)</label>
+              <select
+                id="doc-collection"
+                value={selectedCollectionId || ''}
+                onChange={(e) =>
+                  setSelectedCollectionId(
+                    e.target.value ? parseInt(e.target.value) : null
+                  )
+                }
+                disabled={!collections || collections.length === 0}
+              >
+                <option value="">No Collection</option>
+                {collections?.map((col) => (
+                  <option key={col.id} value={col.id}>
+                    {col.icon} {col.name}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div className={styles.formGroup}>
