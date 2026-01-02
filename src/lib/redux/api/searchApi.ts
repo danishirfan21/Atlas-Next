@@ -1,6 +1,10 @@
 import { apiSlice } from './apiSlice';
 import type { Document, Collection } from '@/types';
 import { mergeDocuments, searchDocuments } from '@/lib/utils/documentService';
+import {
+  mergeCollections,
+  searchCollections,
+} from '@/lib/utils/collectionService';
 
 interface SearchParams {
   q?: string;
@@ -30,20 +34,28 @@ export const searchApi = apiSlice.injectEndpoints({
       },
 
       transformResponse: (response: SearchResults, _meta, arg) => {
-        console.log('🔍 Search - merging documents...');
+        console.log('🔍 Search - merging documents and collections...');
 
         // Merge GitHub documents with localStorage
         const mergedDocuments = mergeDocuments(response.documents);
+
+        // 🎯 MERGE GitHub collections with localStorage
+        const mergedCollections = mergeCollections(response.collections);
 
         // Apply client-side search on merged data if query exists
         const searchedDocuments = arg.q
           ? searchDocuments(mergedDocuments, arg.q)
           : mergedDocuments;
 
+        // 🎯 APPLY client-side search on merged collections
+        const searchedCollections = arg.q
+          ? searchCollections(mergedCollections, arg.q)
+          : mergedCollections;
+
         return {
           documents: searchedDocuments,
-          collections: response.collections, // Collections unchanged
-          totalResults: searchedDocuments.length + response.collections.length,
+          collections: searchedCollections,
+          totalResults: searchedDocuments.length + searchedCollections.length,
         };
       },
 

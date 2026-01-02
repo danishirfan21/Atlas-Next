@@ -1,10 +1,34 @@
 import { apiSlice } from './apiSlice';
 import type { Collection } from '@/types';
+import {
+  mergeCollections,
+  getLocalCollection,
+  createLocalCollection,
+  updateLocalCollection,
+  deleteLocalCollection,
+} from '@/lib/utils/collectionService';
 
 export const collectionsApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getCollections: builder.query<Collection[], void>({
       query: () => '/collections',
+
+      // 🎯 MERGE localStorage collections with GitHub collections
+      transformResponse: (response: Collection[]) => {
+        console.log('🔄 Collections API - merging collections...');
+
+        // Merge GitHub collections with localStorage
+        const mergedCollections = mergeCollections(response);
+
+        // Sort by most recently updated (already done in mergeCollections)
+        mergedCollections.sort(
+          (a, b) =>
+            new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+        );
+
+        return mergedCollections;
+      },
+
       providesTags: (result) =>
         result
           ? [
@@ -15,99 +39,124 @@ export const collectionsApi = apiSlice.injectEndpoints({
     }),
 
     getCollection: builder.query<Collection, number>({
-      query: (id) => `/collections/${id}`,
+      // 🎯 Check localStorage first, fallback to API
+      async queryFn(id, _queryApi, _extraOptions, fetchWithBQ) {
+        // 1. Check localStorage first
+        const localCollection = getLocalCollection(id);
+        if (localCollection) {
+          return { data: localCollection };
+        }
+
+        // 2. Fallback to API
+        const result = await fetchWithBQ(`/collections/${id}`);
+
+        if (result.error) {
+          return { error: result.error };
+        }
+
+        return { data: result.data as Collection };
+      },
+
       providesTags: (result, error, id) => [{ type: 'Collection', id }],
     }),
 
     createCollection: builder.mutation<Collection, Partial<Collection>>({
-      query: (body) => ({
-        url: '/collections',
-        method: 'POST',
-        body,
-      }),
-      invalidatesTags: [{ type: 'Collection', id: 'LIST' }],
-      // Optimistic update
-      async onQueryStarted(newCollection, { dispatch, queryFulfilled }) {
-        // Optimistically add collection to cache
-        const patchResult = dispatch(
-          collectionsApi.util.updateQueryData(
-            'getCollections',
-            undefined,
-            (draft) => {
-              // Create optimistic collection
-              const optimisticCollection: Collection = {
-                id: Date.now(), // Temporary ID
-                name: newCollection.name || 'Untitled Collection',
-                description: newCollection.description || '',
-                icon: newCollection.icon || '📁',
-                iconBg:
-                  newCollection.iconBg ||
-                  'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                documentCount: 0,
-                contributorCount: 1,
-                createdAt: new Date(),
-                updatedAt: new Date(),
-              };
-              draft.push(optimisticCollection);
-            }
-          )
-        );
+      async queryFn(newCollection) {
+        console.log('✨ Creating collection:', newCollection.name);
 
         try {
-          await queryFulfilled;
-        } catch {
-          // Rollback on error
-          patchResult.undo();
+          // Create in localStorage
+          const createdCollection = createLocalCollection(newCollection);
+
+          // Return the created collection
+          return { data: createdCollection };
+        } catch (error: any) {
+          console.error('❌ Failed to create collection:', error);
+          return {
+            error: {
+              status: 500,
+              data: { error: error.message || 'Failed to create collection' },
+            },
+          };
         }
       },
+
+      // Invalidate cache to trigger refetch (which will merge localStorage)
+      invalidatesTags: [{ type: 'Collection', id: 'LIST' }],
     }),
 
     updateCollection: builder.mutation<
       Collection,
       { id: number } & Partial<Collection>
     >({
-      query: ({ id, ...patch }) => ({
-        url: `/collections/${id}`,
-        method: 'PATCH',
-        body: patch,
-      }),
+      async queryFn({ id, ...updates }) {
+        console.log('📝 Updating collection:', id);
+
+        try {
+          // Update in localStorage
+          const updatedCollection = updateLocalCollection(id, updates);
+
+          if (!updatedCollection) {
+            return {
+              error: {
+                status: 404,
+                data: { error: 'Collection not found' },
+              },
+            };
+          }
+
+          // Return the updated collection
+          return { data: updatedCollection };
+        } catch (error: any) {
+          console.error('❌ Failed to update collection:', error);
+          return {
+            error: {
+              status: 500,
+              data: { error: error.message || 'Failed to update collection' },
+            },
+          };
+        }
+      },
+
+      // Invalidate cache to trigger refetch
       invalidatesTags: (result, error, { id }) => [
         { type: 'Collection', id },
         { type: 'Collection', id: 'LIST' },
       ],
-      // Optimistic update
-      async onQueryStarted({ id, ...patch }, { dispatch, queryFulfilled }) {
-        // Update individual collection cache
-        const patchResult1 = dispatch(
-          collectionsApi.util.updateQueryData('getCollection', id, (draft) => {
-            Object.assign(draft, patch);
-            draft.updatedAt = new Date();
-          })
-        );
+    }),
 
-        // Update collection in list cache
-        const patchResult2 = dispatch(
-          collectionsApi.util.updateQueryData(
-            'getCollections',
-            undefined,
-            (draft) => {
-              const collection = draft.find((c) => c.id === id);
-              if (collection) {
-                Object.assign(collection, patch);
-                collection.updatedAt = new Date();
-              }
-            }
-          )
-        );
+    deleteCollection: builder.mutation<{ success: boolean }, number>({
+      async queryFn(id) {
+        console.log('🗑️ Deleting collection:', id);
 
         try {
-          await queryFulfilled;
-        } catch {
-          // Rollback both patches on error
-          patchResult1.undo();
-          patchResult2.undo();
+          // Delete from localStorage
+          const success = deleteLocalCollection(id);
+
+          if (!success) {
+            return {
+              error: {
+                status: 404,
+                data: { error: 'Collection not found' },
+              },
+            };
+          }
+
+          // Return success
+          return { data: { success: true } };
+        } catch (error: any) {
+          console.error('❌ Failed to delete collection:', error);
+          return {
+            error: {
+              status: 500,
+              data: { error: error.message || 'Failed to delete collection' },
+            },
+          };
         }
       },
+
+      // Invalidate cache to trigger refetch
+      invalidatesTags: [{ type: 'Collection', id: 'LIST' }],
     }),
   }),
 });
@@ -117,4 +166,5 @@ export const {
   useGetCollectionQuery,
   useCreateCollectionMutation,
   useUpdateCollectionMutation,
+  useDeleteCollectionMutation,
 } = collectionsApi;
