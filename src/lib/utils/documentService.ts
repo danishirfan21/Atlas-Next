@@ -1,18 +1,11 @@
 /**
- * Document Service - Simple localStorage merge
+ * Document Service - Simple localStorage merge + Activity Tracking
  *
- * When fetching documents:
- * 1. Fetch from GitHub API
- * 2. Get documents from localStorage
- * 3. Merge them together (localStorage overwrites GitHub)
- * 4. Return merged list
- *
- * When creating/updating:
- * 1. Save to localStorage
- * 2. Return the document
+ * When creating/updating documents, also create corresponding activities
  */
 
 import type { Document } from '@/types';
+import { createActivity } from './activityService';
 
 const STORAGE_KEY = 'atlas_local_documents';
 
@@ -105,11 +98,11 @@ export function mergeDocuments(githubDocs: Document[]): Document[] {
 }
 
 // ============================================
-// CRUD OPERATIONS
+// CRUD OPERATIONS (WITH ACTIVITY TRACKING)
 // ============================================
 
 /**
- * Create a new document locally
+ * Create a new document locally + create activity
  */
 export function createLocalDocument(data: Partial<Document>): Document {
   const localDocs = getLocalDocuments();
@@ -123,7 +116,7 @@ export function createLocalDocument(data: Partial<Document>): Document {
     body: data.body || '<p>Start writing...</p>',
     author: data.author || 'DK',
     authorInitials: data.authorInitials || 'DK',
-    createdAt: now, // 🎯 Store creation time
+    createdAt: now,
     updatedAt: now,
     status: data.status || 'Draft',
     views: 0,
@@ -132,13 +125,22 @@ export function createLocalDocument(data: Partial<Document>): Document {
   localDocs.push(newDoc);
   saveLocalDocuments(localDocs);
 
+  // 🎯 CREATE ACTIVITY
+  createActivity(
+    'created',
+    newDoc.id,
+    newDoc.title,
+    newDoc.author,
+    newDoc.authorInitials
+  );
+
   console.log('✨ Created local document:', newDoc.id, newDoc.title);
 
   return newDoc;
 }
 
 /**
- * Update an existing document locally
+ * Update an existing document locally + create activity
  */
 export function updateLocalDocument(
   id: number,
@@ -161,11 +163,20 @@ export function updateLocalDocument(
       status: updates.status || 'Draft',
       views: updates.views || 0,
       ...updates,
-      updatedAt: now, // Always update this
+      updatedAt: now,
     };
 
     localDocs.push(updatedDoc);
     saveLocalDocuments(localDocs);
+
+    // 🎯 CREATE ACTIVITY (updated, not created)
+    createActivity(
+      'updated',
+      updatedDoc.id,
+      updatedDoc.title,
+      updatedDoc.author,
+      updatedDoc.authorInitials
+    );
 
     console.log('📝 Created and updated local document:', id);
     return updatedDoc;
@@ -175,12 +186,22 @@ export function updateLocalDocument(
   const updatedDoc = {
     ...localDocs[index],
     ...updates,
-    createdAt: localDocs[index].createdAt, // 🎯 Don't overwrite createdAt
+    createdAt: localDocs[index].createdAt, // Don't overwrite createdAt
     updatedAt: new Date().toISOString(),
   };
 
   localDocs[index] = updatedDoc;
   saveLocalDocuments(localDocs);
+
+  // 🎯 CREATE ACTIVITY
+  const action = updates.status === 'Published' ? 'published' : 'updated';
+  createActivity(
+    action,
+    updatedDoc.id,
+    updatedDoc.title,
+    updatedDoc.author,
+    updatedDoc.authorInitials
+  );
 
   console.log('📝 Updated local document:', id, updatedDoc.title);
 
@@ -188,7 +209,7 @@ export function updateLocalDocument(
 }
 
 /**
- * Delete a document locally
+ * Delete a document locally (no activity needed)
  */
 export function deleteLocalDocument(id: number): boolean {
   const localDocs = getLocalDocuments();
