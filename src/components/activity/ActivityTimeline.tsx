@@ -1,6 +1,12 @@
 'use client';
 
-import React from 'react';
+import React, { useCallback } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAppDispatch } from '@/lib/redux/hooks';
+import {
+  setSelectedDocumentId,
+  setSelectedCollectionId,
+} from '@/lib/redux/slices/uiSlice';
 import type { ActivityItem } from '@/types';
 import { Avatar } from '@/components/ui/Avatar/Avatar';
 import { formatRelativeTime } from '@/lib/utils/helpers';
@@ -23,6 +29,34 @@ export function ActivityTimeline({
   activities,
   isLoading,
 }: ActivityTimelineProps) {
+  const router = useRouter();
+  const dispatch = useAppDispatch();
+
+  const handleActivityClick = useCallback(
+    (activity: ActivityItem) => {
+      if (activity.documentId) {
+        // Navigate to document
+        dispatch(setSelectedDocumentId(activity.documentId));
+        router.push('/documents');
+      } else if (activity.collectionId) {
+        // Navigate to collection
+        dispatch(setSelectedCollectionId(activity.collectionId));
+        router.push('/collections');
+      }
+    },
+    [dispatch, router]
+  );
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent, activity: ActivityItem) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        handleActivityClick(activity);
+      }
+    },
+    [handleActivityClick]
+  );
+
   if (isLoading) {
     return (
       <div className={styles.timeline}>
@@ -65,15 +99,19 @@ export function ActivityTimeline({
     <div className={styles.timeline}>
       {activities.map((activity) => {
         const config = ACTION_CONFIG[activity.action];
-        const isCollectionActivity = !!activity.collectionId;
+        const isClickable = !!(activity.documentId || activity.collectionId);
 
         return (
           <div
             key={activity.id}
             className={styles.item}
             style={{
-              cursor: isCollectionActivity ? 'default' : 'pointer',
+              cursor: isClickable ? 'pointer' : 'default',
             }}
+            onClick={() => isClickable && handleActivityClick(activity)}
+            onKeyDown={(e) => isClickable && handleKeyDown(e, activity)}
+            role={isClickable ? 'button' : undefined}
+            tabIndex={isClickable ? 0 : undefined}
           >
             <div className={styles.avatarContainer}>
               <Avatar initials={activity.authorInitials} size="md" />
