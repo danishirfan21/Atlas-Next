@@ -25,7 +25,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const dispatch = useAppDispatch();
 
-  // Fetch real data from APIs
+  // Fetch real data from APIs (now includes merged localStorage docs)
   const { data: documentsData, isLoading: isLoadingDocs } =
     useGetDocumentsQuery({
       status: 'all',
@@ -52,7 +52,7 @@ export default function DashboardPage() {
     [dispatch, router]
   );
 
-  // Calculate stats from real data
+  // Calculate stats from real data (includes localStorage documents)
   const stats = useMemo(() => {
     const documents = documentsData?.documents || [];
     const totalDocs = documentsData?.pagination.total || 0;
@@ -71,7 +71,10 @@ export default function DashboardPage() {
 
     // Calculate growth (mock for now - would need historical data)
     // Use a fixed timestamp for SSR compatibility
-    const now = typeof window !== 'undefined' ? Date.now() : new Date('2026-01-01').getTime();
+    const now =
+      typeof window !== 'undefined'
+        ? Date.now()
+        : new Date('2026-01-01').getTime();
     const recentDocs = documents.filter((d) => {
       const daysSinceUpdate =
         (now - new Date(d.updatedAt).getTime()) / (1000 * 60 * 60 * 24);
@@ -171,7 +174,8 @@ export default function DashboardPage() {
         value: `${coveragePercent}%`,
         label: 'Published Coverage',
         change: `${publishedDocs} of ${totalDocs} published`,
-        changeType: coveragePercent >= 80 ? ('positive' as const) : ('neutral' as const),
+        changeType:
+          coveragePercent >= 80 ? ('positive' as const) : ('neutral' as const),
       },
     ];
   }, [documentsData, collections]);
@@ -289,7 +293,8 @@ export default function DashboardPage() {
                   <div className={styles.popularDocTitle}>{doc.title}</div>
                   <div className={styles.popularDocStats}>
                     👁 {doc.views} views <span>•</span> {doc.author}{' '}
-                    <span>•</span> {formatRelativeTime(doc.updatedAt)}
+                    <span>•</span>{' '}
+                    {formatRelativeTime(doc.createdAt || doc.updatedAt)}
                   </div>
                 </div>
               ))}

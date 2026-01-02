@@ -6,6 +6,7 @@ export interface Document {
   body: string;
   author: string;
   authorInitials: string;
+  createdAt: string;
   updatedAt: string; // ISO string for API compatibility
   status: 'Published' | 'Draft' | 'In Review';
   views: number;

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
 import { useGetDocumentsQuery } from '@/lib/redux/api/documentsApi';
 import {
@@ -22,6 +22,7 @@ export default function DocumentsPage() {
   const [isMounted, setIsMounted] = useState(false);
   const dispatch = useAppDispatch();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const selectedDocumentId = useAppSelector(
     (state) => state.ui.selectedDocumentId
   );
@@ -47,9 +48,21 @@ export default function DocumentsPage() {
     setIsMounted(true);
   }, []);
 
+  // 🎯 READ URL PARAMETER AND AUTO-SELECT DOCUMENT
+  useEffect(() => {
+    const docIdParam = searchParams.get('doc');
+    if (docIdParam) {
+      const docId = parseInt(docIdParam);
+      if (!isNaN(docId)) {
+        console.log('📍 URL parameter detected, selecting document:', docId);
+        dispatch(setSelectedDocumentId(docId));
+        hasInternalSelectionRef.current = true;
+      }
+    }
+  }, [searchParams, dispatch]);
+
   useEffect(() => {
     return () => {
-      
       if (hasInternalSelectionRef.current || !initialSelectionRef.current) {
         dispatch(setSelectedDocumentId(null));
       }

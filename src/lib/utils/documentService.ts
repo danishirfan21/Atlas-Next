@@ -113,6 +113,7 @@ export function mergeDocuments(githubDocs: Document[]): Document[] {
  */
 export function createLocalDocument(data: Partial<Document>): Document {
   const localDocs = getLocalDocuments();
+  const now = new Date().toISOString();
 
   const newDoc: Document = {
     id: Date.now(), // Unique ID based on timestamp
@@ -122,7 +123,8 @@ export function createLocalDocument(data: Partial<Document>): Document {
     body: data.body || '<p>Start writing...</p>',
     author: data.author || 'DK',
     authorInitials: data.authorInitials || 'DK',
-    updatedAt: new Date().toISOString(),
+    createdAt: now, // 🎯 Store creation time
+    updatedAt: now,
     status: data.status || 'Draft',
     views: 0,
   };
@@ -147,6 +149,7 @@ export function updateLocalDocument(
 
   if (index === -1) {
     // Document doesn't exist locally yet - add it with updates
+    const now = new Date().toISOString();
     const updatedDoc: Document = {
       id,
       title: updates.title || 'Untitled Document',
@@ -154,10 +157,11 @@ export function updateLocalDocument(
       body: updates.body || '',
       author: updates.author || 'DK',
       authorInitials: updates.authorInitials || 'DK',
-      updatedAt: new Date().toISOString(),
+      createdAt: updates.createdAt || now,
       status: updates.status || 'Draft',
       views: updates.views || 0,
       ...updates,
+      updatedAt: now, // Always update this
     };
 
     localDocs.push(updatedDoc);
@@ -167,10 +171,11 @@ export function updateLocalDocument(
     return updatedDoc;
   }
 
-  // Update existing local document
+  // Update existing local document (preserve createdAt)
   const updatedDoc = {
     ...localDocs[index],
     ...updates,
+    createdAt: localDocs[index].createdAt, // 🎯 Don't overwrite createdAt
     updatedAt: new Date().toISOString(),
   };
 
