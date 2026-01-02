@@ -1,5 +1,12 @@
 import { apiSlice } from './apiSlice';
 import type { Document, PaginatedDocumentsResponse } from '@/types';
+import {
+  mergeDocuments,
+  getLocalDocument,
+  createLocalDocument,
+  updateLocalDocument,
+  deleteLocalDocument,
+} from '@/lib/utils/documentService';
 
 export const documentsApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
@@ -28,6 +35,29 @@ export const documentsApi = apiSlice.injectEndpoints({
         params.append('limit', limit.toString());
         return `/documents?${params.toString()}`;
       },
+
+      transformResponse: (response: PaginatedDocumentsResponse) => {
+        // Merge GitHub docs with local docs
+        const mergedDocuments = mergeDocuments(response.documents);
+
+        // Sort by most recent (already done in mergeDocuments, but ensure it)
+        mergedDocuments.sort(
+          (a, b) =>
+            new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+        );
+
+        return {
+          documents: mergedDocuments,
+          pagination: {
+            ...response.pagination,
+            total: mergedDocuments.length,
+            totalPages: Math.ceil(
+              mergedDocuments.length / response.pagination.limit
+            ),
+          },
+        };
+      },
+
       providesTags: (result) =>
         result
           ? [
@@ -41,105 +71,124 @@ export const documentsApi = apiSlice.injectEndpoints({
     }),
 
     getDocument: builder.query<Document, number>({
-      query: (id) => `/documents/${id}`,
+      // 🎯 SIMPLE: Check localStorage first, fallback to API
+      async queryFn(id, _queryApi, _extraOptions, fetchWithBQ) {
+
+        // 1. Check localStorage first
+        const localDoc = getLocalDocument(id);
+        if (localDoc) {
+          return { data: localDoc };
+        }
+
+        // 2. Fallback to API
+        const result = await fetchWithBQ(`/documents/${id}`);
+
+        if (result.error) {
+          return { error: result.error };
+        }
+
+        return { data: result.data as Document };
+      },
+
       providesTags: (result, error, id) => [{ type: 'Document', id }],
     }),
 
     createDocument: builder.mutation<Document, Partial<Document>>({
-      query: (body) => ({
-        url: '/documents',
-        method: 'POST',
-        body,
-      }),
-      invalidatesTags: [{ type: 'Document', id: 'LIST' }],
-      // Optimistic update
-      async onQueryStarted(newDoc, { dispatch, queryFulfilled }) {
-        // Optimistically add document to cache
-        const patchResult = dispatch(
-          documentsApi.util.updateQueryData(
-            'getDocuments',
-            { status: 'all', sort: 'recent', q: '', page: 1, limit: 10 },
-            (draft) => {
-              // Create optimistic document
-              const optimisticDoc: Document = {
-                id: Date.now(), // Temporary ID
-                title: newDoc.title || 'Untitled Document',
-                snippet: newDoc.snippet || 'Start writing...',
-                body: newDoc.body || '<p>Start writing...</p>',
-                author: newDoc.author || 'DK',
-                authorInitials: newDoc.authorInitials || 'DK',
-                updatedAt: new Date().toISOString(),
-                status: newDoc.status || 'Draft',
-                views: 0,
-              };
-              draft.documents.unshift(optimisticDoc);
-              draft.pagination.total += 1;
-            }
-          )
-        );
+      async queryFn(newDoc) {
+        console.log('✨ Creating document:', newDoc.title);
 
         try {
-          await queryFulfilled;
-        } catch {
-          // Rollback on error
-          patchResult.undo();
+          // Create in localStorage
+          const createdDoc = createLocalDocument(newDoc);
+
+          // Return the created document
+          return { data: createdDoc };
+        } catch (error: any) {
+          console.error('❌ Failed to create document:', error);
+          return {
+            error: {
+              status: 500,
+              data: { error: error.message || 'Failed to create document' },
+            },
+          };
         }
       },
+
+      // Invalidate cache to trigger refetch (which will merge localStorage)
+      invalidatesTags: [{ type: 'Document', id: 'LIST' }],
     }),
 
     updateDocument: builder.mutation<
       Document,
       { id: number } & Partial<Document>
     >({
-      query: ({ id, ...patch }) => ({
-        url: `/documents/${id}`,
-        method: 'PATCH',
-        body: patch,
-      }),
+      async queryFn({ id, ...updates }) {
+        console.log('📝 Updating document:', id);
+
+        try {
+          // Update in localStorage
+          const updatedDoc = updateLocalDocument(id, updates);
+
+          if (!updatedDoc) {
+            return {
+              error: {
+                status: 404,
+                data: { error: 'Document not found' },
+              },
+            };
+          }
+
+          // Return the updated document
+          return { data: updatedDoc };
+        } catch (error: any) {
+          console.error('❌ Failed to update document:', error);
+          return {
+            error: {
+              status: 500,
+              data: { error: error.message || 'Failed to update document' },
+            },
+          };
+        }
+      },
+
+      // Invalidate cache to trigger refetch
       invalidatesTags: (result, error, { id }) => [
         { type: 'Document', id },
         { type: 'Document', id: 'LIST' },
       ],
-      // Optimistic update
-      async onQueryStarted({ id, ...patch }, { dispatch, queryFulfilled }) {
-        // Update individual document cache
-        const patchResult1 = dispatch(
-          documentsApi.util.updateQueryData('getDocument', id, (draft) => {
-            Object.assign(draft, patch);
-            draft.updatedAt = new Date().toISOString();
-          })
-        );
-
-        // Update document in list cache
-        const patchResult2 = dispatch(
-          documentsApi.util.updateQueryData(
-            'getDocuments',
-            { status: 'all', sort: 'recent', q: '', page: 1, limit: 10 },
-            (draft) => {
-              const doc = draft.documents.find((d) => d.id === id);
-              if (doc) {
-                Object.assign(doc, patch);
-                doc.updatedAt = new Date().toISOString();
-              }
-            }
-          )
-        );
-
-        try {
-          await queryFulfilled;
-        } catch {
-          // Rollback both patches on error
-          patchResult1.undo();
-          patchResult2.undo();
-        }
-      },
     }),
 
     deleteDocument: builder.mutation<{ success: boolean }, number>({
-      query: (id) => ({
-        url: `/documents/${id}`,
-        method: 'DELETE',
-      }),
+      async queryFn(id) {
+        console.log('🗑️ Deleting document:', id);
+
+        try {
+          // Delete from localStorage
+          const success = deleteLocalDocument(id);
+
+          if (!success) {
+            return {
+              error: {
+                status: 404,
+                data: { error: 'Document not found' },
+              },
+            };
+          }
+
+          // Return success
+          return { data: { success: true } };
+        } catch (error: any) {
+          console.error('❌ Failed to delete document:', error);
+          return {
+            error: {
+              status: 500,
+              data: { error: error.message || 'Failed to delete document' },
+            },
+          };
+        }
+      },
+
+      // Invalidate cache to trigger refetch
       invalidatesTags: [{ type: 'Document', id: 'LIST' }],
     }),
   }),

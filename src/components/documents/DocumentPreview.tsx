@@ -243,7 +243,21 @@ export function DocumentPreview() {
             <Button variant="primary" onClick={handleEdit}>
               Edit Document
             </Button>
-            <Button variant="secondary">Share</Button>
+            <Button
+              variant="secondary"
+              onClick={() => {
+                const url = `${window.location.origin}/documents?doc=${document.id}`;
+                navigator.clipboard.writeText(url);
+                dispatch(
+                  addToast({
+                    message: 'Document link copied!',
+                    type: 'success',
+                  })
+                );
+              }}
+            >
+              Share
+            </Button>
           </>
         )}
       </div>

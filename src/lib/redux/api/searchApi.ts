@@ -1,5 +1,6 @@
 import { apiSlice } from './apiSlice';
 import type { Document, Collection } from '@/types';
+import { mergeDocuments, searchDocuments } from '@/lib/utils/documentService';
 
 interface SearchParams {
   q?: string;
@@ -27,6 +28,25 @@ export const searchApi = apiSlice.injectEndpoints({
         if (dateTo) params.append('dateTo', dateTo);
         return `/search?${params.toString()}`;
       },
+
+      transformResponse: (response: SearchResults, _meta, arg) => {
+        console.log('🔍 Search - merging documents...');
+
+        // Merge GitHub documents with localStorage
+        const mergedDocuments = mergeDocuments(response.documents);
+
+        // Apply client-side search on merged data if query exists
+        const searchedDocuments = arg.q
+          ? searchDocuments(mergedDocuments, arg.q)
+          : mergedDocuments;
+
+        return {
+          documents: searchedDocuments,
+          collections: response.collections, // Collections unchanged
+          totalResults: searchedDocuments.length + response.collections.length,
+        };
+      },
+
       providesTags: (result) => {
         if (!result) return [{ type: 'Search', id: 'LIST' }];
 
