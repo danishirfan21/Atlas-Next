@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAppSelector } from '@/lib/redux/hooks';
 import styles from './Topbar.module.css';
@@ -8,7 +8,11 @@ import { Avatar } from '@/components/ui/Avatar/Avatar';
 import { Button } from '@/components/ui/Button/Button';
 import { capitalizeFirst } from '@/lib/utils/helpers';
 
-export function Topbar() {
+interface TopbarProps {
+  onMenuClick?: () => void;
+}
+
+export function Topbar({ onMenuClick }: TopbarProps) {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -72,8 +76,30 @@ export function Topbar() {
 
   return (
     <header className={styles.topbar}>
-      <div className={styles.breadcrumb}>
-        Workspace / <span className={styles.activeCrumb}>{pageName}</span>
+      <div className={styles.leftSection}>
+        {/* Mobile hamburger menu */}
+        <button
+          className={styles.hamburger}
+          onClick={onMenuClick}
+          aria-label="Open menu"
+        >
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+
+        <div className={styles.breadcrumb}>
+          Workspace / <span className={styles.activeCrumb}>{pageName}</span>
+        </div>
       </div>
 
       <form onSubmit={handleSearchSubmit} className={styles.searchContainer}>
@@ -91,7 +117,7 @@ export function Topbar() {
         </svg>
         <input
           type="text"
-          placeholder="Search documents..."
+          placeholder="Search..."
           className={styles.searchInput}
           value={localSearchQuery}
           onChange={handleSearchChange}

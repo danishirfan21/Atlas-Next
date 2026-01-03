@@ -1,19 +1,17 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import styles from './Sidebar.module.css';
 
 /**
- * Sidebar Component
+ * Sidebar Component - Mobile Responsive
  *
- * Left navigation bar with links to all pages
- * Highlights active page based on current route
- *
- * Why 'use client'?
- * - Uses usePathname() which requires client-side rendering
- * - Interactive navigation states
+ * Features:
+ * - Desktop: Full sidebar (240px)
+ * - Tablet (768px-1099px): Collapsed icons-only sidebar (72px)
+ * - Mobile (<768px): Hidden by default, opens as overlay with hamburger menu
  */
 
 const navigationItems = [
@@ -145,41 +143,92 @@ const footerItems = [
   },
 ];
 
-export function Sidebar() {
+interface SidebarProps {
+  isOpen?: boolean;
+  onClose?: () => void;
+}
+
+export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
   const pathname = usePathname();
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Detect mobile screen size
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Close on navigation (mobile only)
+  useEffect(() => {
+    if (isMobile && onClose) {
+      onClose();
+    }
+  }, [pathname, isMobile, onClose]);
+
+  // Prevent body scroll when mobile menu is open
+  useEffect(() => {
+    if (isMobile && isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isMobile, isOpen]);
 
   return (
-    <aside
-      className={styles.sidebar}
-      role="navigation"
-      aria-label="Main navigation"
-    >
-      <div className={styles.header}>
-        <Link href="/" className={styles.brandLink}>
-          <h1 className={styles.brand}>Atlas</h1>
-        </Link>
-      </div>
+    <>
+      {/* Mobile overlay */}
+      {isMobile && (
+        <div
+          className={`${styles.overlay} ${isOpen ? styles.visible : ''}`}
+          onClick={onClose}
+          aria-hidden="true"
+        />
+      )}
 
-      <nav className={styles.navGroup} aria-label="Primary">
-        {navigationItems.map((item) => {
-          const isActive = pathname === item.path;
-          return (
-            <Link
-              key={item.path}
-              href={item.path}
-              className={`${styles.navItem} ${isActive ? styles.active : ''}`}
-              aria-current={isActive ? 'page' : undefined}
+      {/* Sidebar */}
+      <aside
+        className={`${styles.sidebar} ${isOpen ? styles.open : ''}`}
+        role="navigation"
+        aria-label="Main navigation"
+      >
+        <div className={styles.header}>
+          <Link href="/" className={styles.brandLink}>
+            <h1 className={styles.brand}>Atlas</h1>
+          </Link>
+
+          {/* Mobile close button */}
+          {isMobile && (
+            <button
+              className={styles.closeButton}
+              onClick={onClose}
+              aria-label="Close menu"
             >
-              {item.icon}
-              <span>{item.name}</span>
-            </Link>
-          );
-        })}
-      </nav>
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          )}
+        </div>
 
-      <div className={styles.footer}>
-        <nav aria-label="Secondary">
-          {footerItems.map((item) => {
+        <nav className={styles.navGroup} aria-label="Primary">
+          {navigationItems.map((item) => {
             const isActive = pathname === item.path;
             return (
               <Link
@@ -194,7 +243,28 @@ export function Sidebar() {
             );
           })}
         </nav>
-      </div>
-    </aside>
+
+        <div className={styles.footer}>
+          <nav aria-label="Secondary">
+            {footerItems.map((item) => {
+              const isActive = pathname === item.path;
+              return (
+                <Link
+                  key={item.path}
+                  href={item.path}
+                  className={`${styles.navItem} ${
+                    isActive ? styles.active : ''
+                  }`}
+                  aria-current={isActive ? 'page' : undefined}
+                >
+                  {item.icon}
+                  <span>{item.name}</span>
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
+      </aside>
+    </>
   );
 }

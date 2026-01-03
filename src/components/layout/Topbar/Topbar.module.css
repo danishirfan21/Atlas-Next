@@ -7,11 +7,46 @@
   justify-content: space-between;
   padding: 0 24px;
   flex-shrink: 0;
+  gap: 16px;
+}
+
+.leftSection {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+  min-width: 0;
+}
+
+.hamburger {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  color: var(--text-main);
+  cursor: pointer;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+.hamburger:hover {
+  background: #f3f4f6;
+}
+
+.hamburger:active {
+  transform: scale(0.95);
 }
 
 .breadcrumb {
   font-size: 14px;
   color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .activeCrumb {
@@ -22,6 +57,8 @@
 .searchContainer {
   position: relative;
   width: 400px;
+  max-width: 400px;
+  flex-shrink: 1;
 }
 
 .searchIcon {
@@ -94,23 +131,105 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-shrink: 0;
 }
 
-/* Responsive */
-@media (max-width: 767px) {
+/* Tablet - Hide breadcrumb "Workspace /" part */
+@media (max-width: 1099px) {
+  .breadcrumb {
+    font-size: 13px;
+  }
+
   .searchContainer {
-    width: 180px;
+    width: 300px;
+  }
+
+  .actions {
+    gap: 8px;
+  }
+}
+
+/* Mobile - Comprehensive responsive design */
+@media (max-width: 767px) {
+  .topbar {
+    height: 56px;
+    padding: 0 12px;
+    gap: 8px;
+  }
+
+  /* Show hamburger menu */
+  .hamburger {
+    display: flex;
+  }
+
+  /* Hide breadcrumb on very small screens */
+  .breadcrumb {
+    display: none;
+  }
+
+  /* Compact search */
+  .searchContainer {
+    width: 100%;
+    max-width: none;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .searchInput {
+    padding: 8px 32px 8px 36px;
+    font-size: 14px;
+  }
+
+  .searchIcon {
+    left: 10px;
   }
 
   .searchShortcut {
     display: none;
   }
 
-  .searchInput {
-    padding: 8px 32px 8px 40px;
-  }
-
   .clearButton {
     right: 8px;
+  }
+
+  /* Compact actions */
+  .actions {
+    gap: 6px;
+  }
+
+  /* Hide refresh button text on mobile */
+  .actions button span {
+    display: none;
+  }
+
+  /* Hide "New Document/Collection" text on mobile */
+  .actions button:last-of-type {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+}
+
+/* Very small mobile (< 375px) */
+@media (max-width: 374px) {
+  .topbar {
+    padding: 0 8px;
+  }
+
+  .searchContainer {
+    min-width: 100px;
+  }
+
+  .actions button:last-of-type {
+    padding: 8px;
+    min-width: 36px;
+  }
+
+  /* Only show "+" icon on very small screens */
+  .actions button:last-of-type::before {
+    content: '+';
+  }
+
+  .actions button:last-of-type * {
+    display: none;
   }
 }
