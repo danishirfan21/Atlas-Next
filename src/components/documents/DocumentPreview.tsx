@@ -242,7 +242,7 @@ export function DocumentPreview({
             className={styles.bodyEdit}
             value={editBody}
             onChange={handleBodyChange}
-            rows={20}
+            rows={12}
           />
         ) : (
           renderedBody
