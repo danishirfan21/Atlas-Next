@@ -3,18 +3,16 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAppSelector } from '@/lib/redux/hooks';
+import { useMobileMenu } from '@/components/providers/MobileMenuProvider';
 import styles from './Topbar.module.css';
 import { Avatar } from '@/components/ui/Avatar/Avatar';
 import { Button } from '@/components/ui/Button/Button';
 import { capitalizeFirst } from '@/lib/utils/helpers';
 
-interface TopbarProps {
-  onMenuClick?: () => void;
-}
-
-export function Topbar({ onMenuClick }: TopbarProps) {
+export function Topbar() {
   const pathname = usePathname();
   const router = useRouter();
+  const { toggleMenu } = useMobileMenu();
 
   const reduxSearchQuery = useAppSelector((state) => state.ui.searchQuery);
   const userInitials = useAppSelector((state) => state.ui.userProfile.initials);
@@ -80,7 +78,7 @@ export function Topbar({ onMenuClick }: TopbarProps) {
         {/* Mobile hamburger menu */}
         <button
           className={styles.hamburger}
-          onClick={onMenuClick}
+          onClick={toggleMenu}
           aria-label="Open menu"
         >
           <svg
@@ -98,7 +96,15 @@ export function Topbar({ onMenuClick }: TopbarProps) {
         </button>
 
         <div className={styles.breadcrumb}>
-          Workspace / <span className={styles.activeCrumb}>{pageName}</span>
+          <button 
+            className={styles.breadcrumbLink}
+            onClick={() => router.push('/')}
+            aria-label="Go to Dashboard"
+          >
+            Workspace
+          </button>
+          {' / '}
+          <span className={styles.activeCrumb}>{pageName}</span>
         </div>
       </div>
 

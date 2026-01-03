@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useMobileMenu } from '@/components/providers/MobileMenuProvider';
 import styles from './Sidebar.module.css';
 
 /**
@@ -148,8 +149,9 @@ interface SidebarProps {
   onClose?: () => void;
 }
 
-export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
+export function Sidebar() {
   const pathname = usePathname();
+  const { isMenuOpen, closeMenu } = useMobileMenu();
   const [isMobile, setIsMobile] = useState(false);
 
   // Detect mobile screen size
@@ -165,14 +167,14 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
 
   // Close on navigation (mobile only)
   useEffect(() => {
-    if (isMobile && onClose) {
-      onClose();
+    if (isMobile) {
+      closeMenu();
     }
-  }, [pathname, isMobile, onClose]);
+  }, [pathname, isMobile, closeMenu]);
 
   // Prevent body scroll when mobile menu is open
   useEffect(() => {
-    if (isMobile && isOpen) {
+    if (isMobile && isMenuOpen) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
@@ -181,22 +183,22 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
     return () => {
       document.body.style.overflow = '';
     };
-  }, [isMobile, isOpen]);
+  }, [isMobile, isMenuOpen]);
 
   return (
     <>
       {/* Mobile overlay */}
       {isMobile && (
         <div
-          className={`${styles.overlay} ${isOpen ? styles.visible : ''}`}
-          onClick={onClose}
+          className={`${styles.overlay} ${isMenuOpen ? styles.visible : ''}`}
+          onClick={closeMenu}
           aria-hidden="true"
         />
       )}
 
       {/* Sidebar */}
       <aside
-        className={`${styles.sidebar} ${isOpen ? styles.open : ''}`}
+        className={`${styles.sidebar} ${isMenuOpen ? styles.open : ''}`}
         role="navigation"
         aria-label="Main navigation"
       >
@@ -209,7 +211,7 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
           {isMobile && (
             <button
               className={styles.closeButton}
-              onClick={onClose}
+              onClick={closeMenu}
               aria-label="Close menu"
             >
               <svg
