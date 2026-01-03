@@ -36,24 +36,29 @@ export const documentsApi = apiSlice.injectEndpoints({
         return `/documents?${params.toString()}`;
       },
 
-      transformResponse: (response: PaginatedDocumentsResponse) => {
-        // Merge GitHub docs with local docs
+      transformResponse: (response: PaginatedDocumentsResponse, _meta, arg) => {
+
+        // 1. Merge GitHub docs with localStorage
         const mergedDocuments = mergeDocuments(response.documents);
 
-        // Sort by most recent (already done in mergeDocuments, but ensure it)
-        mergedDocuments.sort(
-          (a, b) =>
-            new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-        );
+        // 2. Apply CLIENT-SIDE PAGINATION to merged data
+        const { page = 1, limit = 10 } = arg;
+        const startIndex = (page - 1) * limit;
+        const endIndex = startIndex + limit;
+        const paginatedDocs = mergedDocuments.slice(startIndex, endIndex);
+
+        // 3. Recalculate pagination info based on merged data
+        const totalPages = Math.ceil(mergedDocuments.length / limit);
 
         return {
-          documents: mergedDocuments,
+          documents: paginatedDocs,
           pagination: {
-            ...response.pagination,
+            page,
+            limit,
             total: mergedDocuments.length,
-            totalPages: Math.ceil(
-              mergedDocuments.length / response.pagination.limit
-            ),
+            totalPages,
+            hasNext: endIndex < mergedDocuments.length,
+            hasPrev: page > 1,
           },
         };
       },
@@ -71,18 +76,13 @@ export const documentsApi = apiSlice.injectEndpoints({
     }),
 
     getDocument: builder.query<Document, number>({
-      // 🎯 SIMPLE: Check localStorage first, fallback to API
       async queryFn(id, _queryApi, _extraOptions, fetchWithBQ) {
-
-        // 1. Check localStorage first
         const localDoc = getLocalDocument(id);
         if (localDoc) {
           return { data: localDoc };
         }
 
-        // 2. Fallback to API
         const result = await fetchWithBQ(`/documents/${id}`);
-
         if (result.error) {
           return { error: result.error };
         }
@@ -98,10 +98,7 @@ export const documentsApi = apiSlice.injectEndpoints({
         console.log('✨ Creating document:', newDoc.title);
 
         try {
-          // Create in localStorage
           const createdDoc = createLocalDocument(newDoc);
-
-          // Return the created document
           return { data: createdDoc };
         } catch (error: any) {
           console.error('❌ Failed to create document:', error);
@@ -114,7 +111,6 @@ export const documentsApi = apiSlice.injectEndpoints({
         }
       },
 
-      // Invalidate cache to trigger refetch (which will merge localStorage)
       invalidatesTags: [{ type: 'Document', id: 'LIST' }],
     }),
 
@@ -126,7 +122,6 @@ export const documentsApi = apiSlice.injectEndpoints({
         console.log('📝 Updating document:', id);
 
         try {
-          // Update in localStorage
           const updatedDoc = updateLocalDocument(id, updates);
 
           if (!updatedDoc) {
@@ -138,7 +133,6 @@ export const documentsApi = apiSlice.injectEndpoints({
             };
           }
 
-          // Return the updated document
           return { data: updatedDoc };
         } catch (error: any) {
           console.error('❌ Failed to update document:', error);
@@ -151,7 +145,6 @@ export const documentsApi = apiSlice.injectEndpoints({
         }
       },
 
-      // Invalidate cache to trigger refetch
       invalidatesTags: (result, error, { id }) => [
         { type: 'Document', id },
         { type: 'Document', id: 'LIST' },
@@ -163,7 +156,6 @@ export const documentsApi = apiSlice.injectEndpoints({
         console.log('🗑️ Deleting document:', id);
 
         try {
-          // Delete from localStorage
           const success = deleteLocalDocument(id);
 
           if (!success) {
@@ -175,7 +167,6 @@ export const documentsApi = apiSlice.injectEndpoints({
             };
           }
 
-          // Return success
           return { data: { success: true } };
         } catch (error: any) {
           console.error('❌ Failed to delete document:', error);
@@ -188,7 +179,6 @@ export const documentsApi = apiSlice.injectEndpoints({
         }
       },
 
-      // Invalidate cache to trigger refetch
       invalidatesTags: [{ type: 'Document', id: 'LIST' }],
     }),
   }),

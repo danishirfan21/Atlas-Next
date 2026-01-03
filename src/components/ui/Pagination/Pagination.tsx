@@ -46,7 +46,7 @@ export function Pagination({ pagination, onPageChange }: PaginationProps) {
     return pages;
   };
 
-  if (totalPages <= 1) {
+  if (totalPages <= 1 && page === 1) {
     return null;
   }
 

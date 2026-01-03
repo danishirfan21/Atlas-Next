@@ -6,14 +6,12 @@ export async function GET(request: Request) {
     const status = searchParams.get('status');
     const sort = searchParams.get('sort');
     const q = searchParams.get('q');
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '10');
 
     const GITHUB_API_BASE = process.env.NEXT_PUBLIC_MOCK_API_BASE;
 
     // Fetch from GitHub
     const response = await fetch(`${GITHUB_API_BASE}/documents.json`, {
-      next: { revalidate: 60 }, // Cache for 60 seconds
+      next: { revalidate: 60 },
     });
 
     if (!response.ok) {
@@ -46,27 +44,21 @@ export async function GET(request: Request) {
     } else if (sort === 'title') {
       documents.sort((a: any, b: any) => a.title.localeCompare(b.title));
     } else {
-      // Default: recent
       documents.sort(
         (a: any, b: any) =>
           new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
       );
     }
 
-    // Apply pagination
-    const startIndex = (page - 1) * limit;
-    const endIndex = startIndex + limit;
-    const paginatedDocs = documents.slice(startIndex, endIndex);
-
     const responseData = {
-      documents: paginatedDocs,
+      documents: documents,
       pagination: {
-        page,
-        limit,
+        page: 1,
+        limit: 10,
         total: documents.length,
-        totalPages: Math.ceil(documents.length / limit),
-        hasNext: endIndex < documents.length,
-        hasPrev: page > 1,
+        totalPages: 1,
+        hasNext: false,
+        hasPrev: false,
       },
     };
 
@@ -83,9 +75,8 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
 
-    // Create temporary document (optimistic update only)
     const newDoc = {
-      id: Date.now(), // Temporary ID
+      id: Date.now(),
       title: body.title || 'Untitled Document',
       snippet: body.snippet || body.body?.substring(0, 60) + '...' || '',
       body: body.body || '<p>Start writing...</p>',
