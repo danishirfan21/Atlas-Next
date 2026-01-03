@@ -231,14 +231,16 @@ export default function DashboardPage() {
                 <div
                   key={item.id}
                   className={styles.activityItem}
-                  onClick={() => handleDocumentClick(item.documentId)}
-                  style={{ cursor: 'pointer' }}
+                  onClick={() => item.documentId && handleDocumentClick(item.documentId)}
+                  style={{ cursor: item.documentId ? 'pointer' : 'default' }}
                   role="button"
                   tabIndex={0}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
                       e.preventDefault();
-                      handleDocumentClick(item.documentId);
+                      if (item.documentId) {
+                        handleDocumentClick(item.documentId);
+                      }
                     }
                   }}
                 >
