@@ -51,16 +51,66 @@
   overflow-y: auto;
 }
 
-/* Responsive */
+/* Mobile Back Button */
+.mobileBackButton {
+  display: none;
+}
+
+/* Mobile - Full Screen Navigation */
 @media (max-width: 767px) {
   .container {
-    flex-direction: column;
+    position: relative;
   }
 
+  /* List View - Full Screen by default */
   .documentList {
     width: 100%;
+    height: 100%;
     border-right: none;
+  }
+
+  .documentPreview {
+    display: none;
+  }
+
+  /* Detail View - Show when viewing a document */
+  .container.showDetail .documentList {
+    display: none;
+  }
+
+  .container.showDetail .documentPreview {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Mobile Back Button */
+  .mobileBackButton {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
     border-bottom: 1px solid var(--border-color);
-    max-height: 50%;
+    background: white;
+    color: var(--primary-blue);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .mobileBackButton:hover {
+    background: #f9fafb;
+  }
+
+  .mobileBackButton:active {
+    background: #f3f4f6;
+  }
+}
+
+/* Tablet - Keep split view */
+@media (min-width: 768px) and (max-width: 1099px) {
+  .documentList {
+    width: 320px;
   }
 }

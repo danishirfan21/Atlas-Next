@@ -64,6 +64,10 @@
   text-decoration: underline;
 }
 
+.breadcrumbSeparator {
+  margin: 0 4px;
+}
+
 .activeCrumb {
   color: var(--text-main);
   font-weight: 600;
@@ -149,7 +153,7 @@
   flex-shrink: 0;
 }
 
-/* Tablet - Hide breadcrumb "Workspace /" part */
+/* Tablet */
 @media (max-width: 1099px) {
   .breadcrumb {
     font-size: 13px;
@@ -177,12 +181,12 @@
     display: flex;
   }
 
-  /* Hide breadcrumb on very small screens */
+  /* Hide breadcrumb on mobile */
   .breadcrumb {
     display: none;
   }
 
-  /* Compact search */
+  /* Expand search to take available space */
   .searchContainer {
     width: 100%;
     max-width: none;
@@ -207,20 +211,18 @@
     right: 8px;
   }
 
-  /* Compact actions */
-  .actions {
-    gap: 6px;
-  }
-
-  /* Hide refresh button text on mobile */
-  .actions button span {
+  /* 🎯 HIDE REFRESH AND NEW BUTTONS ON MOBILE */
+  .actions > button {
     display: none;
   }
 
-  /* Hide "New Document/Collection" text on mobile */
-  .actions button:last-of-type {
-    padding: 8px 12px;
-    font-size: 13px;
+  /* Keep only avatar visible on mobile */
+  .actions > div {
+    display: flex;
+  }
+
+  .actions {
+    gap: 0;
   }
 }
 
@@ -232,19 +234,5 @@
 
   .searchContainer {
     min-width: 100px;
-  }
-
-  .actions button:last-of-type {
-    padding: 8px;
-    min-width: 36px;
-  }
-
-  /* Only show "+" icon on very small screens */
-  .actions button:last-of-type::before {
-    content: '+';
-  }
-
-  .actions button:last-of-type * {
-    display: none;
   }
 }

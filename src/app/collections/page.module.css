@@ -86,23 +86,70 @@
   }
 }
 
-/* Responsive */
+/* Mobile Back Button */
+.mobileBackButton {
+  display: none;
+}
+
+/* Tablet */
 @media (max-width: 1199px) {
   .sidebar {
     width: 400px;
   }
 }
 
+/* Mobile - Full Screen Navigation */
 @media (max-width: 767px) {
   .container {
-    flex-direction: column;
+    position: relative;
   }
 
+  /* List View - Full Screen by default */
   .sidebar {
     width: 100%;
+    height: 100%;
     border-right: none;
-    border-bottom: 1px solid var(--border-color);
-    max-height: 40%;
     padding: 30px 20px;
+  }
+
+  .detail {
+    display: none;
+  }
+
+  /* Detail View - Show when viewing a collection */
+  .container.showDetail .sidebar {
+    display: none;
+  }
+
+  .container.showDetail .detail {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Mobile Back Button */
+  .mobileBackButton {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--border-color);
+    background: white;
+    color: var(--primary-blue);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    border: none;
+    width: 100%;
+    text-align: left;
+  }
+
+  .mobileBackButton:hover {
+    background: #f9fafb;
+  }
+
+  .mobileBackButton:active {
+    background: #f3f4f6;
   }
 }

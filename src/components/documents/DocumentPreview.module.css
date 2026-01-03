@@ -3,6 +3,10 @@
   max-width: 900px;
 }
 
+.mobileBackButton {
+  display: none;
+}
+
 .header h2 {
   font-size: 32px;
   font-weight: 700;
@@ -120,10 +124,48 @@
   }
 }
 
-/* Responsive */
+/* Mobile */
 @media (max-width: 767px) {
   .container {
-    padding: 30px 20px;
+    padding: 0;
+  }
+
+  /* Mobile Back Button */
+  .mobileBackButton {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border: none;
+    border-bottom: 1px solid var(--border-color);
+    background: white;
+    color: var(--primary-blue);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    width: 100%;
+    text-align: left;
+  }
+
+  .mobileBackButton:hover {
+    background: #f9fafb;
+  }
+
+  .mobileBackButton:active {
+    background: #f3f4f6;
+  }
+
+  /* Adjust container padding after back button */
+  .header,
+  .body,
+  .footer {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .header {
+    padding-top: 20px;
   }
 
   .header h2 {

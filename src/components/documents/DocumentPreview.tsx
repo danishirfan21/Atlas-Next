@@ -21,7 +21,15 @@ import { Badge, Button, EmptyState } from '@/components/ui';
 import { formatRelativeTime } from '@/lib/utils/helpers';
 import styles from './DocumentPreview.module.css';
 
-export function DocumentPreview() {
+interface DocumentPreviewProps {
+  onBackClick?: () => void;
+  showBackButton?: boolean;
+}
+
+export function DocumentPreview({
+  onBackClick,
+  showBackButton = false,
+}: DocumentPreviewProps) {
   const dispatch = useAppDispatch();
   const selectedDocumentId = useAppSelector(
     (state) => state.ui.selectedDocumentId
@@ -187,6 +195,27 @@ export function DocumentPreview() {
 
   return (
     <div className={styles.container}>
+      {/* Mobile Back Button */}
+      {showBackButton && onBackClick && (
+        <button
+          className={styles.mobileBackButton}
+          onClick={onBackClick}
+          aria-label="Back to documents"
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+          Back to Documents
+        </button>
+      )}
+
       <div className={styles.header}>
         {isEditing ? (
           <textarea

@@ -13,18 +13,30 @@ import { useGetDocumentsQuery } from '@/lib/redux/api/documentsApi';
 
 export default function CollectionsPage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [showDetail, setShowDetail] = useState(false);
+
   const dispatch = useAppDispatch();
   const selectedCollectionId = useAppSelector(
     (state) => state.ui.selectedCollectionId
   );
 
   const initialSelectionRef = useRef<number | null | undefined>(undefined);
-
   const hasInternalSelectionRef = useRef(false);
 
   if (initialSelectionRef.current === undefined) {
     initialSelectionRef.current = selectedCollectionId;
   }
+
+  // Detect mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const {
     data: collections,
@@ -41,13 +53,18 @@ export default function CollectionsPage() {
     limit: 100,
   });
 
-  // Auto-select first collection on load if none selected
+  // Auto-select first collection on desktop only
   useEffect(() => {
-    if (collections && collections.length > 0 && !selectedCollectionId) {
+    if (
+      collections &&
+      collections.length > 0 &&
+      !selectedCollectionId &&
+      !isMobile
+    ) {
       dispatch(setSelectedCollectionId(collections[0].id));
       hasInternalSelectionRef.current = true;
     }
-  }, [collections, selectedCollectionId, dispatch]);
+  }, [collections, selectedCollectionId, dispatch, isMobile]);
 
   useEffect(() => {
     if (selectedCollectionId !== initialSelectionRef.current) {
@@ -57,11 +74,9 @@ export default function CollectionsPage() {
 
   useEffect(() => {
     return () => {
-      
       if (hasInternalSelectionRef.current || !initialSelectionRef.current) {
         dispatch(setSelectedCollectionId(null));
       }
-
       initialSelectionRef.current = undefined;
       hasInternalSelectionRef.current = false;
     };
@@ -96,6 +111,16 @@ export default function CollectionsPage() {
 
   const handleSelectCollection = (id: number) => {
     dispatch(setSelectedCollectionId(id));
+
+    // On mobile, show detail view
+    if (isMobile) {
+      setShowDetail(true);
+    }
+  };
+
+  const handleBackToList = () => {
+    setShowDetail(false);
+    // Don't clear selection, just hide detail view
   };
 
   if (error) {
@@ -164,7 +189,9 @@ export default function CollectionsPage() {
 
   return (
     <>
-      <div className={styles.container}>
+      <div
+        className={`${styles.container} ${showDetail ? styles.showDetail : ''}`}
+      >
         <div className={styles.sidebar}>
           <div className={styles.header}>
             <h1 className={styles.title}>Collections</h1>
@@ -204,6 +231,26 @@ export default function CollectionsPage() {
         </div>
 
         <div className={styles.detail}>
+          {/* Mobile Back Button */}
+          {isMobile && showDetail && (
+            <button
+              className={styles.mobileBackButton}
+              onClick={handleBackToList}
+              aria-label="Back to collections"
+            >
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <polyline points="15 18 9 12 15 6"></polyline>
+              </svg>
+              Back to Collections
+            </button>
+          )}
           <CollectionDetail />
         </div>
       </div>

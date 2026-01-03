@@ -20,6 +20,9 @@ import styles from './page.module.css';
 export default function DocumentsPage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [showDetail, setShowDetail] = useState(false);
+
   const dispatch = useAppDispatch();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -31,7 +34,6 @@ export default function DocumentsPage() {
   const pagination = useAppSelector((state) => state.ui.documentsPagination);
 
   const initialSelectionRef = useRef<number | null | undefined>(undefined);
-
   const hasInternalSelectionRef = useRef(false);
 
   if (initialSelectionRef.current === undefined) {
@@ -42,6 +44,16 @@ export default function DocumentsPage() {
   const viewMode = useAppSelector(
     (state) => state.ui.viewPreferences.documentsViewMode
   );
+
+  // Detect mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Fix hydration: wait for mount before rendering persisted state
   useEffect(() => {
@@ -57,9 +69,14 @@ export default function DocumentsPage() {
         console.log('📍 URL parameter detected, selecting document:', docId);
         dispatch(setSelectedDocumentId(docId));
         hasInternalSelectionRef.current = true;
+
+        // Show detail view on mobile when URL has doc parameter
+        if (isMobile) {
+          setShowDetail(true);
+        }
       }
     }
-  }, [searchParams, dispatch]);
+  }, [searchParams, dispatch, isMobile]);
 
   useEffect(() => {
     return () => {
@@ -83,13 +100,13 @@ export default function DocumentsPage() {
   const documents = data?.documents || [];
   const paginationInfo = data?.pagination;
 
-  // Auto-select first document on load if none selected
+  // Auto-select first document on desktop only (not on mobile)
   useEffect(() => {
-    if (documents && documents.length > 0 && !selectedDocumentId) {
+    if (documents && documents.length > 0 && !selectedDocumentId && !isMobile) {
       dispatch(setSelectedDocumentId(documents[0].id));
       hasInternalSelectionRef.current = true;
     }
-  }, [documents, selectedDocumentId, dispatch]);
+  }, [documents, selectedDocumentId, dispatch, isMobile]);
 
   useEffect(() => {
     if (selectedDocumentId !== initialSelectionRef.current) {
@@ -143,9 +160,26 @@ export default function DocumentsPage() {
     dispatch(setDocumentsPage(page));
   };
 
+  // Mobile navigation handlers
+  const handleDocumentSelect = (id: number) => {
+    dispatch(setSelectedDocumentId(id));
+
+    // On mobile, show detail view
+    if (isMobile) {
+      setShowDetail(true);
+    }
+  };
+
+  const handleBackToList = () => {
+    setShowDetail(false);
+    // Don't clear selection, just hide detail view
+  };
+
   return (
     <>
-      <div className={styles.container}>
+      <div
+        className={`${styles.container} ${showDetail ? styles.showDetail : ''}`}
+      >
         <div className={styles.documentList}>
           <div className={styles.filterBar}>
             <select
@@ -198,7 +232,10 @@ export default function DocumentsPage() {
         </div>
 
         <div className={styles.documentPreview}>
-          <DocumentPreview />
+          <DocumentPreview
+            showBackButton={isMobile && showDetail}
+            onBackClick={handleBackToList}
+          />
         </div>
       </div>
 
