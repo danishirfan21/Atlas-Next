@@ -172,8 +172,8 @@
 @media (max-width: 767px) {
   .topbar {
     height: 56px;
-    padding: 0 12px;
-    gap: 8px;
+    padding: 0 16px;
+    gap: 12px;
   }
 
   /* Show hamburger menu */
@@ -186,21 +186,30 @@
     display: none;
   }
 
-  /* Expand search to take available space */
+  /* LEFT SECTION: Only hamburger */
+  .leftSection {
+    flex: 0 0 auto;
+    min-width: auto;
+  }
+
+  /* CENTER SECTION: Expand search to take maximum space */
   .searchContainer {
     width: 100%;
     max-width: none;
     flex: 1;
     min-width: 0;
+    margin: 0;
   }
 
   .searchInput {
-    padding: 8px 32px 8px 36px;
-    font-size: 14px;
+    padding: 10px 32px 10px 36px;
+    font-size: 15px;
+    background: #f9fafb;
+    border-radius: 10px;
   }
 
   .searchIcon {
-    left: 10px;
+    left: 12px;
   }
 
   .searchShortcut {
@@ -208,7 +217,7 @@
   }
 
   .clearButton {
-    right: 8px;
+    right: 10px;
   }
 
   /* 🎯 HIDE REFRESH AND NEW BUTTONS ON MOBILE */
@@ -223,16 +232,18 @@
 
   .actions {
     gap: 0;
+    flex: 0 0 auto;
   }
 }
 
 /* Very small mobile (< 375px) */
 @media (max-width: 374px) {
   .topbar {
-    padding: 0 8px;
+    padding: 0 12px;
   }
 
-  .searchContainer {
-    min-width: 100px;
+  .searchInput {
+    font-size: 14px;
+    padding: 8px 32px 8px 36px;
   }
 }

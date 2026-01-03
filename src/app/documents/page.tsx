@@ -216,6 +216,7 @@ export default function DocumentsPage() {
                 documents={documents}
                 isLoading={isLoading}
                 onNewDocument={() => setShowCreateModal(true)}
+                onSelectDocument={handleDocumentSelect}
                 viewMode={isMounted ? viewMode : 'list'}
               />
 

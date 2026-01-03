@@ -13,6 +13,7 @@ interface DocumentListProps {
   documents: Document[];
   isLoading: boolean;
   onNewDocument: () => void;
+  onSelectDocument?: (id: number) => void;
   viewMode: 'list' | 'grid';
 }
 
@@ -20,6 +21,7 @@ export function DocumentList({
   documents,
   isLoading,
   onNewDocument,
+  onSelectDocument,
   viewMode,
 }: DocumentListProps) {
   const dispatch = useAppDispatch();
@@ -37,9 +39,14 @@ export function DocumentList({
 
   const handleSelectDocument = useCallback(
     (id: number) => {
-      dispatch(setSelectedDocumentId(id));
+      // Use custom handler if provided (for mobile), otherwise use Redux
+      if (onSelectDocument) {
+        onSelectDocument(id);
+      } else {
+        dispatch(setSelectedDocumentId(id));
+      }
     },
-    [dispatch]
+    [dispatch, onSelectDocument]
   );
 
   const highlightText = (text: string, query: string) => {
